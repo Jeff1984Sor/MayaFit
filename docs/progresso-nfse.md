@@ -238,7 +238,15 @@ padrão "T" (configurável em `parametros_extras.tributacao_sp`).
    ContextVar (como as demais tarefas). O storage do PDF usa a categoria `nfse` (`nfse.ver`).
 4. Bloqueio por plano: não implementado (coordenador).
 5. Seed: chamar `app.modules.nfse.demo.popular_demo(db)` (cria configuração SIMULADA só se ainda não houver CNPJ).
-6. Financeiro: se no futuro existir um gancho "recebimento pago", basta chamar
+6. `tests/dados/test_migracao.py::test_upgrade_igual_ao_create_all_e_downgrade_limpa` aplica SÓ a `0001` e
+   compara com o `create_all` de todo o metadata: com qualquer migration nova (como a `0150_nfse`) ele falha
+   por design. Precisa aplicar a cadeia inteira (`alembic upgrade head`). A `0150_nfse` foi conferida à parte:
+   `upgrade head` cria `nfse_config`, `nota_fiscal` e `nota_fiscal_evento`; o `downgrade` para a 0001 as remove.
+7. Suíte completa (31/10/2026): 3854 passaram; falham o item 6 e dois testes antigos que dependem da data de
+   hoje (`app_aluno/test_aulas_reposicao.py::test_lista_so_as_proprias_aulas_futuras_sem_canceladas`, prazo
+   fixo em 27/10/2026, e `financeiro/test_receita_saude.py::test_arquivo_por_aluno_...`, nome de arquivo com a
+   data fixa 20261025). Nenhum deles é do módulo NFS-e.
+8. Financeiro: se no futuro existir um gancho "recebimento pago", basta chamar
    `nfse.servico.enfileirar_recebimento(db, conta_id, origem="automatica")`; hoje a varredura do worker cobre.
 
 ## 6. Linhas em arquivos compartilhados

@@ -9,7 +9,9 @@ import {
   CalendarDays,
   ClipboardList,
   Clock,
+  FileCheck2,
   FileSignature,
+  FileCog,
   FileText,
   FolderTree,
   HeartPulse,
@@ -89,6 +91,8 @@ export const NAV: NavGrupo[] = [
       { label: "Contas bancárias", href: "/financeiro/bancos", icone: Landmark, permissao: "financeiro_bancos.ver" },
       { label: "Receita Saúde", href: "/receita-saude", icone: HeartPulse, permissao: "receita_saude.ver" },
       { label: "Comissões", href: "/comissoes", icone: Percent, permissao: "comissoes.ver" },
+      { label: "Notas fiscais (NFS-e)", href: "/nfse", icone: FileCheck2, permissao: "nfse.ver", planejado: false },
+      { label: "Configuração fiscal", href: "/configuracoes/nfse", icone: FileCog, permissao: "nfse.configurar", planejado: false },
     ],
   },
   {

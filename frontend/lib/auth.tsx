@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     staleTime: 5 * 60_000,
     retry: false,
     meta: { silencioso: true },
-    enabled: typeof window !== "undefined" && !/^\/(login|esqueci-senha|redefinir-senha|assinar|app)(\/|$)/.test(window.location.pathname),
+    enabled: typeof window !== "undefined" && !/^\/(login|esqueci-senha|redefinir-senha|assinar|app|cadastro|primeiro-acesso|aprovar)(\/|$)/.test(window.location.pathname),
   });
 
   const login = useCallback(

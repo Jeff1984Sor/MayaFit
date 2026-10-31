@@ -36,7 +36,7 @@ function mensagemDeErro(status: number, body: unknown): string {
 }
 
 function irParaLogin() {
-  if (typeof window !== "undefined" && !/^\/(login|esqueci-senha|redefinir-senha|assinar|app)(\/|$)/.test(window.location.pathname)) {
+  if (typeof window !== "undefined" && !/^\/(login|esqueci-senha|redefinir-senha|assinar|app|cadastro|primeiro-acesso|aprovar)(\/|$)/.test(window.location.pathname)) {
     const volta = encodeURIComponent(window.location.pathname + window.location.search);
     // navegação completa de propósito: zera o estado em memória (cache de dados do usuário anterior)
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination

@@ -12,7 +12,7 @@ from app.core.schemas import IdentidadePublica
 
 router = APIRouter(tags=["público"])
 
-NOME_PADRAO = "Pilates"
+NOME_PADRAO = "MayaFit"
 
 
 def _identidade(db) -> Identidade | None:

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Backup diário (cron 02:00, instalado pelo instalar.sh em /etc/cron.d/pilates-nova-backup)
+# Backup diário (cron 02:00, instalado pelo instalar.sh em /etc/cron.d/mayafit-backup)
 # Banco (pg_dump) + ARQUIVOS (storage: fotos, assinaturas, documentos, comprovantes). Envia para fora do servidor
 # (bucket) quando houver gcloud e mantém 30 dias local.
 #
@@ -7,9 +7,9 @@
 # resto: guarde a MASTER_KEY num cofre à parte. BACKUP_INCLUIR_ENV=1 grava um tar do .env (modo 600) só no servidor.
 set -euo pipefail
 AMB="${1:-prod}"
-APP_DIR="/home/deploy/pilates-nova/$AMB"
-DESTINO="${BACKUP_DIR:-/home/deploy/backups/pilates-nova/$AMB}"
-BUCKET="${BACKUP_BUCKET:-gs://CONFIGURAR-BUCKET/pilates-nova/$AMB}"   # placeholder: definir antes de usar
+APP_DIR="/home/deploy/mayafit/$AMB"
+DESTINO="${BACKUP_DIR:-/home/deploy/backups/mayafit/$AMB}"
+BUCKET="${BACKUP_BUCKET:-gs://CONFIGURAR-BUCKET/mayafit/$AMB}"   # placeholder: definir antes de usar
 ENV_FILE="$APP_DIR/backend/.env"
 DATABASE_URL="$(grep -E '^DATABASE_URL=' "$ENV_FILE" | cut -d= -f2-)"
 STORAGE="$(grep -E '^STORAGE_DIR=' "$ENV_FILE" | cut -d= -f2- || true)"

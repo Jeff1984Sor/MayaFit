@@ -32,7 +32,7 @@ export function ClientLogo({ className, compacto }: { className?: string; compac
   );
 }
 
-/** Marca do estúdio nas telas públicas (nome e logo vêm do banco; padrão neutro "Pilates"). */
+/** Marca do estúdio nas telas públicas (nome e logo vêm do banco; padrão neutro "MayaFit"). */
 export function MarcaLogo({ className, claro }: { className?: string; claro?: boolean }) {
   const { nome_exibicao } = useBrand();
   return (

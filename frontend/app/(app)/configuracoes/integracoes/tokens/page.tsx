@@ -174,7 +174,7 @@ export default function TokensPage() {
                   <tr key={t.id} className={cn(t.precisa_regenerar && "bg-warning/5", !t.ativo && !t.precisa_regenerar && "opacity-60")}>
                     <td className="px-4 py-3 font-medium">{t.nome}</td>
                     <td className="px-3 py-3 font-mono text-xs text-muted-foreground">
-                      {t.token_final ? `pilates_••••••••${t.token_final}` : <span className="font-sans">sem valor</span>}
+                      {t.token_final ? `mayafit_••••••••${t.token_final}` : <span className="font-sans">sem valor</span>}
                     </td>
                     <td className="px-3 py-3">
                       {t.precisa_regenerar ? (

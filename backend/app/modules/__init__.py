@@ -1,4 +1,4 @@
-"""Módulos de negócio do Pilates."""
+"""Módulos de negócio do MayaFit."""
 
 
 def registrar_modelos() -> None:

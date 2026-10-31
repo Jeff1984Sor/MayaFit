@@ -39,7 +39,7 @@ CODIGO_MINUTOS = 10
 MAX_TENTATIVAS = 5  # erros por código; ao chegar, o código morre e é preciso pedir outro
 ACCESS_HORAS = 12
 REFRESH_DIAS = 7
-AUDIENCIA = "pilates-aluno"
+AUDIENCIA = "mayafit-aluno"
 TIPO_ACCESS = "aluno_access"
 TIPO_REFRESH = "aluno_refresh"
 

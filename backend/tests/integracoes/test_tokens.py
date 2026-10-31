@@ -24,7 +24,7 @@ def chave(valor):
 
 def test_criar_devolve_o_valor_uma_vez_e_guarda_so_hash(client, db, full):
     t = criar(client, full)
-    assert t["valor"].startswith("pilates_") and len(t["valor"]) > 40
+    assert t["valor"].startswith("mayafit_") and len(t["valor"]) > 40
     assert t["token_final"] == t["valor"][-4:] and t["ativo"] is True and t["precisa_regenerar"] is False
     linha = db.scalar(select(IntegracaoToken).where(IntegracaoToken.id == t["id"]))
     assert linha.token_hash == hashlib.sha256(t["valor"].encode()).hexdigest()
@@ -64,7 +64,7 @@ def test_regenerar_invalida_o_valor_antigo(client, db, full):
     novo = client.post(f"/api/integracoes/tokens/{t['id']}/regenerar", headers=full)
     assert novo.status_code == 200
     v2 = novo.json()["valor"]
-    assert v2 != t["valor"] and v2.startswith("pilates_") and novo.json()["token_final"] == v2[-4:]
+    assert v2 != t["valor"] and v2.startswith("mayafit_") and novo.json()["token_final"] == v2[-4:]
     assert client.get("/api/integracao/alunos", headers=chave(t["valor"])).status_code == 401
     assert client.get("/api/integracao/alunos", headers=chave(v2)).status_code == 200
 
@@ -150,7 +150,7 @@ def test_rate_limit_de_falhas_por_ip(client, monkeypatch):
 
 def test_formato_e_unicidade_do_valor():
     a, b = tokens.gerar_valor(), tokens.gerar_valor()
-    assert a != b and a.startswith("pilates_") and len(a) >= 8 + 43
+    assert a != b and a.startswith("mayafit_") and len(a) >= 8 + 43
     assert tokens.hash_token(a) != tokens.hash_token(b) and len(tokens.hash_token(a)) == 64
 
 

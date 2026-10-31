@@ -1,4 +1,4 @@
-"""Peças comuns aos modelos do Pilates (mixin do código legado e helper de enum)."""
+"""Peças comuns aos modelos do MayaFit (mixin do código legado e helper de enum)."""
 
 import enum
 

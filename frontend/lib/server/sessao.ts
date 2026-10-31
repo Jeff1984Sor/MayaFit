@@ -1,8 +1,8 @@
 // Cookies de sessão (httpOnly) e renovação de tokens. Só roda no servidor do Next (BFF e proxy).
 import type { NextResponse } from "next/server";
 
-export const ACCESS = "pilates_access";
-export const REFRESH = "pilates_refresh";
+export const ACCESS = "mayafit_access";
+export const REFRESH = "mayafit_refresh";
 export interface Par {
   access: string;
   refresh: string;

@@ -53,7 +53,7 @@ function resposta(r: Response, corpo?: BodyInit | null) {
 async function tratar(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const caminho = (await ctx.params).path.join("/");
   if (caminho.includes("..") || caminho === "auth/refresh") return NextResponse.json({ detail: "Não encontrado." }, { status: 404 });
-  if (!origemValida(req) || (req.method !== "GET" && req.headers.get("x-requested-with") !== "pilates")) {
+  if (!origemValida(req) || (req.method !== "GET" && req.headers.get("x-requested-with") !== "mayafit")) {
     return NextResponse.json({ detail: "Requisição recusada." }, { status: 403 });
   }
 

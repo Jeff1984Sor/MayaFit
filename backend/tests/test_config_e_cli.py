@@ -13,7 +13,7 @@ from tests.conftest import SENHA, auth, criar_usuario, entrar
 def test_seed_e_idempotente_e_cria_identidade_e_perfis(db):
     seed.base(db)
     seed.base(db)
-    assert db.scalar(select(Identidade.nome_exibicao)) == "Studio Mayris Pilates"
+    assert db.scalar(select(Identidade.nome_exibicao)) == "Estúdio Demonstração"
     nomes = sorted(db.scalars(select(PerfilAcesso.nome)))
     assert nomes == sorted(["Full", "Professor", "Secretária"])
     assert db.get(ConfigEmail, 1) is not None
@@ -68,9 +68,9 @@ def test_limpar_dados_recusa_sem_confirmacao():
 
 # ---------------------------------------------------------------------------------------------- usuários / identidade (API)
 def test_identidade_publica_padrao_e_editada(client, db, token_admin):
-    assert client.get("/api/public/identidade").json()["nome_exibicao"] == "Pilates"  # padrão neutro sem banco populado
+    assert client.get("/api/public/identidade").json()["nome_exibicao"] == "MayaFit"  # padrão neutro sem banco populado
     seed.base(db)
-    assert client.get("/api/public/identidade").json()["nome_exibicao"] == "Studio Mayris Pilates"
+    assert client.get("/api/public/identidade").json()["nome_exibicao"] == "Estúdio Demonstração"
     h = auth(token_admin)
     r = client.put("/api/config/identidade", headers=h, json={"nome_exibicao": "Outro Studio", "cor_destaque": "#6B1F3A"})
     assert r.status_code == 200

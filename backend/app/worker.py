@@ -1,4 +1,4 @@
-"""Worker de produção (systemd `pilates-nova-worker`): tarefas periódicas fora do ciclo das requisições.
+"""Worker de produção (systemd `mayafit-worker`): tarefas periódicas fora do ciclo das requisições.
 
 Cada módulo registra suas tarefas com `registrar_tarefa` (ex.: lembretes de WhatsApp a cada 5 min, conclusão automática
 de aulas passadas, alertas). Não há broker: o estado fica no banco. Rodar: `python -m app.worker`.

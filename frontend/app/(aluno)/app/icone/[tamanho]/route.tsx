@@ -13,7 +13,7 @@ function iniciais(nome: string) {
 }
 
 async function marca() {
-  let nome = "Pilates";
+  let nome = "MayaFit";
   let cor = "#b0486b";
   let logo: string | null = null;
   try {

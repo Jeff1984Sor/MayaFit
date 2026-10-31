@@ -1,5 +1,5 @@
 [Unit]
-Description=Pilates Nova - Frontend Next.js (%i)
+Description=MayaFit - Frontend Next.js (%i)
 After=network.target
 
 [Service]

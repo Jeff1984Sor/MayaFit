@@ -69,7 +69,7 @@ async function rawFetch(path: string, opts: RequestOpts = {}): Promise<Response>
     h.set("Content-Type", "application/json");
     payload = JSON.stringify(body);
   }
-  h.set("X-Requested-With", "pilates");
+  h.set("X-Requested-With", "mayafit");
 
   let res: Response;
   try {

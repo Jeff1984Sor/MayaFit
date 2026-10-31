@@ -1,5 +1,5 @@
 [Unit]
-Description=Pilates Nova - API (%i)
+Description=MayaFit - API (%i)
 After=network.target postgresql.service
 
 [Service]

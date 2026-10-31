@@ -10,8 +10,8 @@ const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"], display
 const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Pilates · Gestão do estúdio",
-  description: "Sistema de gestão para estúdios de Pilates: agenda, alunos, contratos e financeiro.",
+  title: "MayaFit · Gestão do estúdio",
+  description: "Sistema de gestão para estúdios (Pilates, funcional, academias): agenda, alunos, contratos e financeiro.",
 };
 
 export const viewport: Viewport = {

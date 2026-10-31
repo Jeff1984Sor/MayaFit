@@ -65,7 +65,7 @@ class Identidade_:
 
 def identidade_do_estudio(db: Session) -> Identidade_:
     ident = db.get(Identidade, 1)
-    nome = (ident.nome_exibicao if ident else None) or "Pilates"
+    nome = (ident.nome_exibicao if ident else None) or "MayaFit"
     logo = None
     if ident and ident.logo_path:
         try:

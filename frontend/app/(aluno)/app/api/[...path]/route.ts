@@ -64,7 +64,7 @@ async function tratar(req: NextRequest, ctx: { params: Promise<{ path: string[] 
     return out;
   }
   if (!PERMITIDAS.test(caminho)) return NextResponse.json({ detail: "Não encontrado." }, { status: 404 });
-  if (!origemValida(req) || (req.method !== "GET" && req.headers.get("x-requested-with") !== "pilates-aluno")) {
+  if (!origemValida(req) || (req.method !== "GET" && req.headers.get("x-requested-with") !== "mayafit-aluno")) {
     return NextResponse.json({ detail: "Requisição recusada." }, { status: 403 });
   }
 

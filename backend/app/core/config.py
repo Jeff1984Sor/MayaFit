@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", env_file_encoding="utf-8", extra="ignore")
 
-    app_name: str = "Pilates"
+    app_name: str = "MayaFit"
     ambiente: Literal["dev", "hml", "prod"] = "dev"
     debug: bool = False
     # Hosts aceitos no cabeçalho Host. Em hml/prod é obrigatório listar explicitamente (nada de "*").
@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str | None = None
     smtp_password: str | None = None
-    smtp_from: str = "Pilates <nao-responda@localhost>"
+    smtp_from: str = "MayaFit <nao-responda@localhost>"
 
     frontend_url: str = "http://localhost:3000"
 

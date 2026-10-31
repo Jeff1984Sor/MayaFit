@@ -1,7 +1,7 @@
 [project]
-name = "pilates-api"
+name = "mayafit-api"
 version = "0.1.0"
-description = "Pilates — API (FastAPI)"
+description = "MayaFit — API (FastAPI)"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.1",

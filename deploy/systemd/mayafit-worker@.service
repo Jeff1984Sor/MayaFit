@@ -1,5 +1,5 @@
 [Unit]
-Description=Pilates Nova - Worker / tarefas periódicas (%i)
+Description=MayaFit - Worker / tarefas periódicas (%i)
 After=network.target postgresql.service
 
 [Service]

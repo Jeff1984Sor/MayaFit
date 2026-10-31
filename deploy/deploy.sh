@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
-# Deploy do Pilates Nova no servidor (VPS compartilhada com outros sistemas).
+# Deploy do MayaFit no servidor (VPS compartilhada com outros sistemas).
 #
 # Passos sempre na mesma ordem e, em produção, uma tag vN como ponto de retorno.
 # Nada vai para produção sem ter passado pela homologação.
 #
-# Uso (no servidor, como o usuário deploy, dentro de /home/deploy/pilates-nova/<amb>):
-#     ./deploy/deploy.sh hml            # branch develop -> hml-pilates.mayacorp.com.br  (domínio placeholder)
-#     ./deploy/deploy.sh prod           # branch main    -> pilates-novo.mayacorp.com.br  (cria tag vN)
+# Uso (no servidor, como o usuário deploy, dentro de /home/deploy/mayafit/<amb>):
+#     ./deploy/deploy.sh hml            # branch develop -> hml-mayafit.mayacorp.com.br  (domínio placeholder)
+#     ./deploy/deploy.sh prod           # branch main    -> mayafit.mayacorp.com.br  (cria tag vN)
 #     ./deploy/deploy.sh prod --sem-tag
 #
 set -euo pipefail
@@ -22,8 +22,8 @@ CRIAR_TAG=0
 [ "$AMB" = "prod" ] && CRIAR_TAG=1
 [ "${2:-}" = "--sem-tag" ] && CRIAR_TAG=0
 
-APP_DIR="${APP_DIR:-$HOME/pilates-nova/$AMB}"
-SERVICOS="pilates-nova-api@$AMB pilates-nova-worker@$AMB pilates-nova-web@$AMB"
+APP_DIR="${APP_DIR:-$HOME/mayafit/$AMB}"
+SERVICOS="mayafit-api@$AMB mayafit-worker@$AMB mayafit-web@$AMB"
 UV="$(command -v uv || echo "$HOME/.local/bin/uv")"
 cd "$APP_DIR"
 API_PORTA="$(grep -E '^API_PORTA=' backend/.env | cut -d= -f2)"
@@ -80,7 +80,7 @@ if [ "$CRIAR_TAG" = "1" ]; then
   PROXIMA="v$(( ${ULTIMA:-0} + 1 ))"
   echo "$PROXIMA" > backend/VERSION
   # identidade só para a tag (o usuário deploy do servidor não tem git config global)
-  GIT_ID=(-c user.name="Deploy Pilates" -c user.email="deploy@localhost")
+  GIT_ID=(-c user.name="Deploy MayaFit" -c user.email="deploy@localhost")
   git "${GIT_ID[@]}" tag -a "$PROXIMA" -m "Deploy $PROXIMA em $(date '+%d/%m/%Y %H:%M')"
   if git push -q origin "$PROXIMA" 2>/dev/null; then
     echo "    tag $PROXIMA publicada"

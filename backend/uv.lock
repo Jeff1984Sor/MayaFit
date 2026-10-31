@@ -928,7 +928,7 @@ wheels = [
 ]
 
 [[package]]
-name = "pilates-api"
+name = "mayafit-api"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

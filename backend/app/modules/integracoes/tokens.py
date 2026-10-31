@@ -1,6 +1,6 @@
 """Tokens de API dos integradores externos (empresas/chatbots que chamam `/api/integracao/*`).
 
-- Formato do valor: `pilates_` + texto aleatório URL-safe (32 bytes). O valor completo existe só na resposta de
+- Formato do valor: `mayafit_` + texto aleatório URL-safe (32 bytes). O valor completo existe só na resposta de
   criar/regenerar; o banco guarda o SHA-256 (`token_hash`) e os 4 últimos caracteres (`token_final`).
 - Token migrado do sistema antigo vem SEM valor (`token_hash` nulo e `precisa_regenerar`): não autentica até regenerar.
 - Autenticar = procurar pelo hash entre os tokens ATIVOS. Token desativado ou inexistente dão a mesma resposta (401).
@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from app.core.db import agora
 from app.modules.cadastros.models import IntegracaoToken
 
-PREFIXO = "pilates_"
+PREFIXO = "mayafit_"
 #: o "último uso" só é regravado se o anterior tiver mais que isto (evita uma escrita por requisição)
 INTERVALO_ULTIMO_USO = timedelta(seconds=30)
 

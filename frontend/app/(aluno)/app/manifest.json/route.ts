@@ -6,7 +6,7 @@ const API = (process.env.INTERNAL_API_URL ?? "http://localhost:8000/api").replac
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  let nome = "Pilates";
+  let nome = "MayaFit";
   let cor = "#b0486b";
   try {
     const r = await fetch(`${API}/public/identidade`, { cache: "no-store", signal: AbortSignal.timeout(4000) });

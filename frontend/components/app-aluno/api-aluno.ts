@@ -25,7 +25,7 @@ export async function apiAluno<T>(caminho: string, opts: { method?: "GET" | "POS
       credentials: "same-origin",
       cache: "no-store",
       headers: {
-        "X-Requested-With": "pilates-aluno",
+        "X-Requested-With": "mayafit-aluno",
         ...(opts.body !== undefined ? { "Content-Type": "application/json" } : {}),
       },
       body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,

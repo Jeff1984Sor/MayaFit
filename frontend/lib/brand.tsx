@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { API_URL, api } from "./api";
 import type { IdentidadePublica } from "./types";
 
-const PADRAO: IdentidadePublica = { nome_exibicao: "Pilates", logo_url: null, cor_destaque: null };
+const PADRAO: IdentidadePublica = { nome_exibicao: "MayaFit", logo_url: null, cor_destaque: null };
 
 interface BrandCtx extends IdentidadePublica {
   logoSrc: string | null;

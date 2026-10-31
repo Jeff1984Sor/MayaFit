@@ -1,4 +1,4 @@
-"""Regras de negócio do Studio Mayris Pilates como funções puras.
+"""Regras de negócio do MayaFit (estúdios) como funções puras.
 
 Cada módulo cita o arquivo/linha do sistema antigo (Django) de onde a regra foi extraída e tem
 testes de caracterização ("golden master") em ``backend/tests/domain/`` com valores gerados rodando o

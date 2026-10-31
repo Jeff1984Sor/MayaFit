@@ -91,7 +91,7 @@ class ConfigEmail(Base, Timestamped):
     __tablename__ = "config_email"
 
     id: Mapped[int] = mapped_column(primary_key=True, default=1)
-    remetente_nome: Mapped[str] = mapped_column(String(150), default="Pilates")
+    remetente_nome: Mapped[str] = mapped_column(String(150), default="MayaFit")
     remetente_email: Mapped[str] = mapped_column(String(200), default="nao-responda@localhost")
     smtp_host: Mapped[str | None] = mapped_column(String(200))
     smtp_porta: Mapped[int] = mapped_column(Integer, default=587)

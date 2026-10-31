@@ -1,13 +1,13 @@
 """Carga inicial idempotente: `python -m app.seed`.
 
-Cria (só o que faltar): identidade "Studio Mayris Pilates", configuração de e-mail, perfis de acesso padrão e, em dev,
+Cria (só o que faltar): identidade "Estúdio Demonstração", configuração de e-mail, perfis de acesso padrão e, em dev,
 1 administrador de demonstração. A senha NUNCA fica no código: vem de SEED_ADMIN_SENHA ou é pedida no terminal.
 
     uv run python -m app.seed                  # dev: base + admin de demonstração
     uv run python -m app.seed --somente-base   # hml/prod: sem usuário (crie com app.criar_usuario)
     uv run python -m app.seed --com-admin      # força o admin também fora do dev
 
-Variáveis: SEED_ADMIN_EMAIL (padrão admin@pilates.local), SEED_ADMIN_LOGIN (padrão admin), SEED_ADMIN_SENHA.
+Variáveis: SEED_ADMIN_EMAIL (padrão admin@mayafit.local), SEED_ADMIN_LOGIN (padrão admin), SEED_ADMIN_SENHA.
 """
 
 import argparse
@@ -24,7 +24,7 @@ from app.core.db import SessionLocal
 from app.core.models import ConfigEmail, ConfigIA, Identidade, Usuario
 from app.core.security import hash_senha, validar_politica_senha
 
-NOME_ESTUDIO = "Studio Mayris Pilates"
+NOME_ESTUDIO = "Estúdio Demonstração"
 
 
 def base(db: Session) -> None:
@@ -76,7 +76,7 @@ def main() -> None:
         senha = os.environ.get("SEED_ADMIN_SENHA") or (getpass.getpass("Senha do admin de demonstração: ") if sys.stdin.isatty() else "")
         if not senha:
             sys.exit("Informe a senha do admin em SEED_ADMIN_SENHA (ou rode em um terminal interativo).")
-        u = admin_demonstracao(db, email=os.environ.get("SEED_ADMIN_EMAIL", "admin@pilates.local"),
+        u = admin_demonstracao(db, email=os.environ.get("SEED_ADMIN_EMAIL", "admin@mayafit.local"),
                                login=os.environ.get("SEED_ADMIN_LOGIN", "admin"), senha=senha)
         print(f"Administrador criado: {u.email}" if u else "Administrador já existia (nada alterado).")
 

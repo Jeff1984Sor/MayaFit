@@ -3,13 +3,13 @@
 # Primeira instalação de um ambiente num servidor que JÁ RODA outros sistemas.
 # Regra: não atualizar, reiniciar nem reconfigurar nada que já exista. Só acrescentar.
 #
-#   sudo bash instalar.sh hml       # padrão hml-pilates.mayacorp.com.br (API 10041, web 10042); troque com DOMINIO_AMB=...
-#   sudo bash instalar.sh prod      # pilates-novo.mayacorp.com.br (API 10051, web 10052)   <- placeholders
+#   sudo bash instalar.sh hml       # padrão hml-mayafit.mayacorp.com.br (API 10071, web 10072); troque com DOMINIO_AMB=...
+#   sudo bash instalar.sh prod      # mayafit.mayacorp.com.br (API 10061, web 10062)   <- placeholders
 #
 # !!! PORTAS E DOMÍNIOS ABAIXO SÃO PLACEHOLDERS: VERIFICAR NO SERVIDOR ANTES DE USAR !!!
 # (ss -ltn para portas livres; DNS/domínio definitivo com o Jefferson). O script aborta se a porta estiver em uso.
 #
-# Segue o padrão do servidor: código em /home/deploy/pilates-nova/<amb>, serviços rodando como o usuário deploy.
+# Segue o padrão do servidor: código em /home/deploy/mayafit/<amb>, serviços rodando como o usuário deploy.
 # O banco começa VAZIO (só a identidade, as configurações vazias e os perfis padrão). NENHUM segredo de integração
 # (e-mail, WhatsApp, TotalPass, IA) é pedido aqui: o administrador cadastra pela tela depois.
 #
@@ -17,25 +17,25 @@ set -euo pipefail
 
 AMB="${1:?informe o ambiente: hml ou prod}"
 case "$AMB" in
-  prod) BRANCH=main;    API_PORTA=10051; WEB_PORTA=10052; DOMINIO=pilates-novo.mayacorp.com.br ;;
-  hml)  BRANCH=develop; API_PORTA=10041; WEB_PORTA=10042; DOMINIO=hml-pilates.mayacorp.com.br ;;
+  prod) BRANCH=main;    API_PORTA=10061; WEB_PORTA=10062; DOMINIO=mayafit.mayacorp.com.br ;;
+  hml)  BRANCH=develop; API_PORTA=10071; WEB_PORTA=10072; DOMINIO=hml-mayafit.mayacorp.com.br ;;
   *) echo "Ambiente inválido: $AMB (use prod ou hml)"; exit 1 ;;
 esac
-# Domínio escolhido na hora (ex.: DOMINIO_AMB=mayrispilates.mayacorp.com.br sudo -E bash instalar.sh hml)
+# Domínio escolhido na hora (ex.: DOMINIO_AMB=estudio.mayafit.mayacorp.com.br sudo -E bash instalar.sh hml)
 DOMINIO="${DOMINIO_AMB:-$DOMINIO}"
-REPO="${REPO:-https://github.com/Jeff1984Sor/Pilates_NovaVersao.git}"
+REPO="${REPO:-https://github.com/Jeff1984Sor/MayaFit.git}"
 USUARIO=deploy
-BASE=/home/$USUARIO/pilates-nova
+BASE=/home/$USUARIO/mayafit
 DIR="$BASE/$AMB"
-BANCO="pilates_nova_$AMB"
-ROLE="pilates_nova_$AMB"
-NGINX_SITE="/etc/nginx/sites-available/pilates-nova-$AMB"
+BANCO="mayafit_$AMB"
+ROLE="mayafit_$AMB"
+NGINX_SITE="/etc/nginx/sites-available/mayafit-$AMB"
 
 [ "$(id -u)" = "0" ] || { echo "Rode com sudo: sudo bash instalar.sh $AMB"; exit 1; }
 id "$USUARIO" >/dev/null 2>&1 || { echo "Usuário $USUARIO não existe."; exit 1; }
 como() { sudo -u "$USUARIO" -H bash -lc "$1"; }
 
-echo "=== Pilates Nova ($AMB) → $DIR ==="
+echo "=== MayaFit ($AMB) → $DIR ==="
 echo "    Portas $API_PORTA/$WEB_PORTA e domínio $DOMINIO são placeholders: confirme no servidor."
 
 echo "--- 1/9 Conferindo o servidor (nada é alterado nesta etapa)"
@@ -115,26 +115,26 @@ como "cd '$DIR/frontend' && npm ci --silent && npm run build >/dev/null"
 
 echo "--- 8/9 Serviços (systemd) e nginx — só acrescenta, não mexe nos existentes"
 for svc in api worker web; do
-  sed "s|__BASE__|$BASE|g; s|__USUARIO__|$USUARIO|g; s|__NODE_DIR__|$NODE_DIR|g" "$DIR/deploy/systemd/pilates-nova-$svc@.service" \
-    > "/etc/systemd/system/pilates-nova-$svc@.service"
+  sed "s|__BASE__|$BASE|g; s|__USUARIO__|$USUARIO|g; s|__NODE_DIR__|$NODE_DIR|g" "$DIR/deploy/systemd/mayafit-$svc@.service" \
+    > "/etc/systemd/system/mayafit-$svc@.service"
 done
 systemctl daemon-reload
-systemctl enable --now "pilates-nova-api@$AMB" "pilates-nova-worker@$AMB" "pilates-nova-web@$AMB"
+systemctl enable --now "mayafit-api@$AMB" "mayafit-worker@$AMB" "mayafit-web@$AMB"
 
 sed "s|__DOMINIO__|$DOMINIO|g; s|__API__|$API_PORTA|g; s|__WEB__|$WEB_PORTA|g; s|__AMB__|$AMB|g" \
-  "$DIR/deploy/nginx/pilates-nova.conf.template" > "$NGINX_SITE"
-ln -s "$NGINX_SITE" "/etc/nginx/sites-enabled/pilates-nova-$AMB"
-if nginx -t 2>/tmp/pilates-nova-nginx.txt; then
+  "$DIR/deploy/nginx/mayafit.conf.template" > "$NGINX_SITE"
+ln -s "$NGINX_SITE" "/etc/nginx/sites-enabled/mayafit-$AMB"
+if nginx -t 2>/tmp/mayafit-nginx.txt; then
   systemctl reload nginx   # reload: os sites existentes continuam no ar
 else
-  rm -f "/etc/nginx/sites-enabled/pilates-nova-$AMB"
+  rm -f "/etc/nginx/sites-enabled/mayafit-$AMB"
   echo "    O nginx recusou a configuração nova; ela foi DESFEITA (os outros sites seguem intactos):"
-  cat /tmp/pilates-nova-nginx.txt
+  cat /tmp/mayafit-nginx.txt
   exit 1
 fi
 if [ "$AMB" = "prod" ]; then
-  echo "0 2 * * * $USUARIO $DIR/deploy/backup.sh prod >> /home/$USUARIO/pilates-nova/backup.log 2>&1" \
-    > /etc/cron.d/pilates-nova-backup
+  echo "0 2 * * * $USUARIO $DIR/deploy/backup.sh prod >> /home/$USUARIO/mayafit/backup.log 2>&1" \
+    > /etc/cron.d/mayafit-backup
 fi
 
 echo "--- 9/9 Primeiro usuário Full (administrador)"

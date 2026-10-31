@@ -10,7 +10,7 @@
 set -euo pipefail
 AMB="${1:?ambiente (hml|prod)}"
 ARG="${2:?versão (ex.: v7) ou --retomar}"
-APP_DIR="${APP_DIR:-$HOME/pilates-nova/$AMB}"
+APP_DIR="${APP_DIR:-$HOME/mayafit/$AMB}"
 UV="$(command -v uv || echo "$HOME/.local/bin/uv")"
 case "$AMB" in hml) BRANCH_PADRAO=develop ;; prod) BRANCH_PADRAO=main ;; *) echo "Ambiente inválido"; exit 1 ;; esac
 cd "$APP_DIR"
@@ -35,7 +35,7 @@ echo "$ORIGEM $VERSAO" > .rollback-ativo
 (cd backend && "$UV" sync --frozen -q)
 (cd frontend && npm ci --silent && npm run build >/dev/null)
 echo "$VERSAO" > backend/VERSION
-sudo systemctl restart "pilates-nova-api@$AMB" "pilates-nova-worker@$AMB" "pilates-nova-web@$AMB"
+sudo systemctl restart "mayafit-api@$AMB" "mayafit-worker@$AMB" "mayafit-web@$AMB"
 sleep 4
 API_PORTA="$(grep -E '^API_PORTA=' backend/.env | cut -d= -f2)"
 CODIGO="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$API_PORTA/api/health" || echo 000)"
@@ -47,4 +47,4 @@ echo " Não faça commits aqui. Quando o problema for resolvido:"
 echo "     ./deploy/rollback.sh $AMB --retomar    (volta para a branch $ORIGEM)"
 echo "     ./deploy/deploy.sh $AMB                (publica a versão corrigida)"
 echo "================================================================"
-[ "$CODIGO" = "200" ] || { echo "A API não respondeu após o rollback. Confira: journalctl -u pilates-nova-api@$AMB -n 50"; exit 1; }
+[ "$CODIGO" = "200" ] || { echo "A API não respondeu após o rollback. Confira: journalctl -u mayafit-api@$AMB -n 50"; exit 1; }

@@ -72,6 +72,9 @@ CATALOGO: list[dict] = [
         {"id": "perfis", "nome": "Perfis de acesso", "acoes": ["ver", "editar"]},
         {"id": "auditoria", "nome": "Auditoria", "acoes": ["ver"]},
     ]},
+    {"grupo": "Vendas", "recursos": [
+        {"id": "crm", "nome": "CRM de vendas (funil, leads, tarefas e relatórios)", "acoes": ["ver", "editar", "excluir"]},
+    ]},
 ]
 
 TODAS = {f"{r['id']}.{a}" for g in CATALOGO for r in g["recursos"] for a in r["acoes"]}
@@ -94,6 +97,7 @@ _SECRETARIA = (
     | _todas_de("cadastros", acoes=("ver",))
     # decisão do Jefferson (25/10/2026): a Secretária também edita horários, bloqueios, termos e modelos
     | {"cadastros_horarios.editar", "cadastros_bloqueios.editar", "cadastros_termos.editar", "cadastros_modelos.editar"}
+    | {"crm.ver", "crm.editar"}  # CRM de vendas: a Secretária atende e move os leads (excluir fica com o Full)
 )
 
 # Perfis criados de saída (decisão do Jefferson: só três; outros se criam pela matriz de permissões).

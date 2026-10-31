@@ -19,8 +19,8 @@ export function AreaMayaCorp({ children }: { children: React.ReactNode }) {
     return (
       <EmptyState
         icone={Building2}
-        titulo="Área exclusiva da MayaCorp"
-        descricao="Estas telas administram os estúdios clientes do MayaFit e só abrem no endereço do admin da MayaCorp."
+        titulo="Área exclusiva do admin MayaFit"
+        descricao="Estas telas administram os estúdios clientes do MayaFit e só abrem no endereço do Admin MayaFit."
         acao={<Button variant="outline" render={<Link href="/" />}>Voltar ao início</Button>}
         className="py-20"
       />
@@ -29,7 +29,7 @@ export function AreaMayaCorp({ children }: { children: React.ReactNode }) {
     return (
       <EmptyState
         icone={ShieldOff}
-        titulo="Só administradores da MayaCorp"
+        titulo="Só administradores do Admin MayaFit"
         descricao="Peça a um administrador para liberar o seu acesso."
         acao={<Button variant="outline" render={<Link href="/" />}>Voltar ao início</Button>}
         className="py-20"

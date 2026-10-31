@@ -9,7 +9,7 @@ import { FormDialog } from "@/components/mayacorp/form-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { copiarTexto, DIAS_TESTE_PADRAO, soDigitos, useEstudios, useExtras, usePlanos, valorDoCiclo } from "@/lib/admin";
+import { copiarTexto, DIAS_TESTE_PADRAO, fichaDe, soDigitos, useEstudios, useExtras, usePlanos, valorDoCiclo } from "@/lib/admin";
 import { api } from "@/lib/api";
 import { moeda, numero } from "@/lib/format";
 import type { Estudio, EstudioNovoIn, FichaIn } from "@/lib/tipos-admin";
@@ -36,20 +36,6 @@ const vazio = (): EstudioNovoIn => ({
   dominios: [],
 });
 
-const fichaDe = (c: Estudio): FichaIn => ({
-  nome: c.nome,
-  documento: c.documento,
-  responsavel: c.responsavel,
-  email_financeiro: c.email_financeiro,
-  telefone: c.telefone,
-  plano_id: c.plano_id,
-  ciclo: c.ciclo,
-  inicio_contrato: c.inicio_contrato,
-  teste_ate: c.teste_ate,
-  observacao: c.observacao,
-  indicado_por_id: c.indicado_por_id,
-  extras: c.extras ?? [],
-});
 
 const nulo = (v: string | null) => (v && v.trim() ? v.trim() : null);
 

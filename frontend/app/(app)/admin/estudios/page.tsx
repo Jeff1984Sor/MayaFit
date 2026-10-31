@@ -44,7 +44,7 @@ function EstudiosConteudo() {
         titulo="Estúdios"
         descricao="Os clientes do MayaFit: ficha, plano, uso, domínios e acesso."
         icone={Building2}
-        migalhas={[{ label: "MayaCorp", href: "/admin" }, { label: "Estúdios" }]}
+        migalhas={[{ label: "Admin MayaFit", href: "/admin" }, { label: "Estúdios" }]}
         acoes={
           <Button onClick={() => setNovo(true)}>
             <Plus /> Novo estúdio

@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { api } from "./api";
 import { useAuth } from "./auth";
-import type { Estudio, PlanoOut, ResumoAdmin, Rotulo, UsuarioComEstudio } from "./tipos-admin";
+import type { Estudio, FichaIn, PlanoOut, ResumoAdmin, Rotulo, UsuarioComEstudio } from "./tipos-admin";
 
 /** Teste grátis padrão de um estúdio novo (decisão do Jefferson: 2 meses). */
 export const DIAS_TESTE_PADRAO = 60;
@@ -73,3 +73,29 @@ export function diasAte(iso: string | null | undefined) {
 export const valorDoCiclo = (p: PlanoOut, ciclo: "mensal" | "anual") => (ciclo === "anual" ? p.preco_anual : p.preco_mensal);
 
 export const soDigitos = (v: string | null | undefined) => (v ?? "").replace(/\D/g, "");
+
+/** Ficha editável (corpo do PUT /admin/clientes/{id}) a partir do estúdio lido. */
+export const fichaDe = (c: Estudio): FichaIn => ({
+  nome: c.nome,
+  documento: c.documento,
+  responsavel: c.responsavel,
+  email_financeiro: c.email_financeiro,
+  telefone: c.telefone,
+  plano_id: c.plano_id,
+  ciclo: c.ciclo,
+  inicio_contrato: c.inicio_contrato,
+  teste_ate: c.teste_ate,
+  observacao: c.observacao,
+  indicado_por_id: c.indicado_por_id,
+  extras: c.extras ?? [],
+});
+
+/** Soma dias a uma data ISO (ou a hoje, se a data já passou ou não existe). */
+export function somarDias(iso: string | null | undefined, dias: number) {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const base = iso ? new Date(`${iso.slice(0, 10)}T00:00:00`) : hoje;
+  const d = base < hoje ? hoje : base;
+  d.setDate(d.getDate() + dias);
+  return d.toLocaleDateString("sv-SE");
+}

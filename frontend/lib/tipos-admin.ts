@@ -315,11 +315,19 @@ export interface PrimeiroAcessoInfo {
   email: string | null;
 }
 
-/** Rótulos dos recursos do plano e dos extras, para as telas públicas (sem login não há GET /admin/recursos). */
+/**
+ * Rótulos de reserva dos recursos do plano, só para as telas públicas quando a API não manda o rótulo
+ * (no admin e no Meu plano os rótulos vêm de GET /admin/recursos e de MeuPlano.recursos).
+ */
 export const RECURSOS_PADRAO: Record<string, string> = {
   gestao: "Agenda, alunos, contratos e financeiro",
+  site: "Site do estúdio",
+  crm: "CRM de interessados",
   app_aluno: "App do aluno",
   whatsapp: "Avisos por WhatsApp",
+  checkin: "Check-in",
+  integracoes: "Integrações (Gympass, TotalPass…)",
   ia: "Assistente com IA",
-  integracoes: "Integrações",
+  nfse: "Nota fiscal de serviço",
+  catraca: "Catraca",
 };

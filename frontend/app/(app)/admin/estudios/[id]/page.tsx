@@ -6,9 +6,11 @@ import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";
 
+import { AcoesRapidas } from "@/components/admin/acoes-rapidas";
 import { AbaCobrancas } from "@/components/admin/cobranca";
 import { EstudioDialog } from "@/components/admin/estudio-dialog";
 import { AbaContratos, AbaDominios, AbaUso, AbaUsuarios } from "@/components/admin/ficha-abas";
+import { LinhaDoTempo, SaudeEstudio } from "@/components/admin/saude";
 import { ConfirmDialog } from "@/components/mayacorp/confirm-dialog";
 import { EmptyState } from "@/components/mayacorp/empty-state";
 import { NativeSelect } from "@/components/mayacorp/form";
@@ -22,7 +24,7 @@ import { api } from "@/lib/api";
 import { data, documento, moeda, toNum } from "@/lib/format";
 import { type Estudio, ROTULO_STATUS, type StatusEstudio, TOM_STATUS } from "@/lib/tipos-admin";
 
-const ABAS = ["uso", "usuarios", "dominios", "contratos", "cobrancas"];
+const ABAS = ["geral", "uso", "usuarios", "dominios", "contratos", "cobrancas"];
 
 const AVISO_STATUS: Record<StatusEstudio, string> = {
   teste: "O estúdio entra normalmente durante o teste grátis. Confira a data de fim do teste na ficha.",
@@ -59,7 +61,7 @@ function FichaConteudo() {
       <PageHeader
         titulo={e.nome}
         icone={Building2}
-        migalhas={[{ label: "MayaCorp", href: "/admin" }, { label: "Estúdios", href: "/admin/estudios" }, { label: e.nome }]}
+        migalhas={[{ label: "Admin MayaFit", href: "/admin" }, { label: "Estúdios", href: "/admin/estudios" }, { label: e.nome }]}
         descricao={
           <span className="font-mono text-xs">
             {e.slug}
@@ -139,14 +141,28 @@ function FichaConteudo() {
         </div>
       </div>
 
-      <Tabs defaultValue={aba && ABAS.includes(aba) ? aba : "uso"}>
+      <div className="mb-5">
+        <AcoesRapidas estudio={e} />
+      </div>
+
+      <Tabs defaultValue={aba && ABAS.includes(aba) ? aba : "geral"}>
         <TabsList className="max-w-full overflow-x-auto">
+          <TabsTrigger value="geral">Visão geral</TabsTrigger>
           <TabsTrigger value="uso">Uso e dados</TabsTrigger>
           <TabsTrigger value="usuarios">Usuários</TabsTrigger>
           <TabsTrigger value="dominios">Domínios</TabsTrigger>
           <TabsTrigger value="contratos">Contratos</TabsTrigger>
           <TabsTrigger value="cobrancas">Cobranças</TabsTrigger>
         </TabsList>
+        <TabsContent value="geral" className="mt-4">
+          <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
+            <div className="space-y-4">
+              <SaudeEstudio estudio={e} />
+              <AbaUso estudio={e} />
+            </div>
+            <LinhaDoTempo estudio={e} />
+          </div>
+        </TabsContent>
         <TabsContent value="uso" className="mt-4">
           <AbaUso estudio={e} />
         </TabsContent>

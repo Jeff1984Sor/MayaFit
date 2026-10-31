@@ -191,7 +191,7 @@ export function AbaUsuarios({ estudio }: { estudio: Estudio }) {
                   <tr key={u.id} className={u.ativo ? "" : "opacity-60"}>
                     <td className="px-4 py-3">
                       <p className="font-medium">
-                        {u.nome} {u.equipe_mayacorp && <Pill tom="brand">MayaCorp</Pill>}
+                        {u.nome} {u.equipe_mayacorp && <Pill tom="brand">Suporte</Pill>}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {u.email ?? "sem e-mail"}

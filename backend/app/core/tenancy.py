@@ -97,7 +97,7 @@ def url_do_banco(banco: str) -> str:
     """Mesmo servidor e credenciais do DATABASE_URL, outro banco (no SQLite, outro arquivo ao lado)."""
     url = make_url(settings.database_url)
     if url.get_backend_name() == "sqlite":
-        return str(url.set(database=str(Path(url.database or "data/dev.db").with_name(f"{banco}.db"))))
+        return f"sqlite:///{Path(url.database or 'data/dev.db').with_name(f'{banco}.db').as_posix()}"
     return url.set(database=banco).render_as_string(hide_password=False)
 
 

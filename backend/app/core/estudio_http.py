@@ -10,6 +10,7 @@ Também confere o Host (substitui o TrustedHostMiddleware): vale o que estiver e
 e, no modo multi, qualquer domínio cadastrado no controle.
 """
 
+import contextvars
 from urllib.parse import parse_qs
 
 import anyio
@@ -19,6 +20,13 @@ from starlette.responses import PlainTextResponse
 from app.core import tenancy
 from app.core.config import settings
 from app.core.tenancy import Estudio
+
+# o pedido veio pelo endereço de um estúdio que não pode entrar (inativo): o login não cai no catálogo
+_endereco_bloqueado: contextvars.ContextVar[bool] = contextvars.ContextVar("endereco_bloqueado", default=False)
+
+
+def endereco_bloqueado() -> bool:
+    return _endereco_bloqueado.get()
 
 
 def estudio_do_token(token: str | None) -> Estudio | None:
@@ -56,7 +64,8 @@ def host_do_pedido(headers: dict[str, str]) -> str:
     return (headers.get("x-forwarded-host") or headers.get("host") or "").split(",")[0].strip()
 
 
-def _identificar(scope) -> Estudio | None:
+def _identificar(scope) -> tuple[Estudio | None, bool]:
+    """(estúdio, endereço de estúdio inativo?)."""
     from app.controle import service
 
     headers = _cabecalhos(scope)
@@ -65,9 +74,11 @@ def _identificar(scope) -> Estudio | None:
     if not token:
         token = (parse_qs(scope.get("query_string", b"").decode()).get("token") or [None])[0]
     esc = estudio_do_token(token)
+    bloqueado = False
     if esc is None and (host := host_do_pedido(headers)):
         esc = service.por_host(host)
-    return esc
+        bloqueado = esc is None and service.host_conhecido(host)
+    return esc, bloqueado
 
 
 def _host_permitido(host: str, permitidos: list[str]) -> bool:
@@ -112,9 +123,11 @@ class EstudioMiddleware:
         if not tenancy.multi():
             await self.app(scope, receive, send)
             return
-        esc = await anyio.to_thread.run_sync(_identificar, scope)  # consulta o banco de controle (com cache)
+        esc, bloqueado = await anyio.to_thread.run_sync(_identificar, scope)  # consulta o controle (com cache)
         token = tenancy.definir(esc)
+        marca = _endereco_bloqueado.set(bloqueado)
         try:
             await self.app(scope, receive, send)
         finally:
+            _endereco_bloqueado.reset(marca)
             tenancy._atual.reset(token)

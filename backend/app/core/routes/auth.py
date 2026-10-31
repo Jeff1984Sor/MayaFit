@@ -12,7 +12,7 @@ from app.core import audit, perfis, storage, tenancy
 from app.core import auth_service as svc
 from app.core.db import agora
 from app.core.deps import DB, Ctx, ip_cliente
-from app.core.estudio_http import definir_pelo_token
+from app.core.estudio_http import definir_pelo_token, endereco_bloqueado
 from app.core.models import PerfilAcesso, Usuario
 from app.core.ratelimit import limitar, verificar
 from app.core.schemas import (
@@ -60,6 +60,8 @@ def estudio_do_login(identificador: str) -> bool:
     do estúdio). Quem chama responde com a MESMA mensagem genérica (não revela nada)."""
     if not tenancy.multi() or tenancy.atual() is not None:
         return True
+    if endereco_bloqueado():  # endereço de estúdio inativo: não entra por ali (nem cai no catálogo)
+        return False
     from app.controle import service
 
     esc = service.por_login(identificador)

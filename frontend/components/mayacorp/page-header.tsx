@@ -19,7 +19,7 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between", className)}>
+    <div className={cn("mb-6 flex animate-in flex-col gap-4 duration-300 fade-in slide-in-from-bottom-1 sm:flex-row sm:items-end sm:justify-between", className)}>
       <div className="min-w-0">
         {migalhas && migalhas.length > 0 && (
           <nav className="mb-2 flex flex-wrap items-center gap-1 text-xs text-muted-foreground" aria-label="breadcrumb">

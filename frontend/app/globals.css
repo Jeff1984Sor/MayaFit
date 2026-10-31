@@ -310,3 +310,65 @@ html.ambiente-hml {
   outline-offset: 4px;
   border-radius: 8px;
 }
+
+/* ---------- MayaFit: acabamento (acessibilidade e microinterações) ---------- */
+@layer base {
+  /* foco visível em tudo que não define o próprio anel (links do menu, cartões clicáveis…) */
+  :where(a, button, [role="button"], [tabindex]):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* cartão clicável: sobe 2px e ganha sombra ao passar o mouse */
+  .card-hover {
+    transition:
+      transform 200ms ease-out,
+      box-shadow 200ms ease-out;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 2px 4px rgb(15 23 41 / 0.05),
+      0 16px 32px -16px rgb(15 23 41 / 0.2);
+  }
+  /* esqueleto com brilho deslizante (substitui o pulse) */
+  .skeleton-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      var(--muted) 25%,
+      color-mix(in oklab, var(--muted) 45%, var(--card)) 50%,
+      var(--muted) 75%
+    );
+    background-size: 200% 100%;
+  }
+  /* brilho da marca atrás de ícones e números de destaque */
+  .brand-glow {
+    box-shadow: 0 8px 24px -8px color-mix(in oklab, var(--brand) 55%, transparent);
+  }
+  /* flutuação lenta (ilustrações do login) */
+  .flutuar {
+    animation: flutuar 7s ease-in-out infinite;
+  }
+}
+@keyframes flutuar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

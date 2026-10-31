@@ -186,7 +186,9 @@ def dados_do_estudio(db: Session, c: sc.ConteudoSite, *, publico: bool) -> sc.Da
         modalidades=[sc.ModalidadeDado(id=i, nome=n) for i, n in visiveis.items()],
         planos=planos,
         profissionais=[sc.ProfissionalDado(id=p.id, nome=p.nome) for p in profs],
-        grade=_grade(db, visiveis, profs_marcados, c.grade.mostrar_professor),
+        # no editor a grade leva o primeiro nome de todos (a prévia filtra pelos marcados enquanto se edita)
+        grade=_grade(db, visiveis, profs_marcados if publico else {p.id: p.nome for p in profs},
+                     c.grade.mostrar_professor or not publico),
     )
 
 

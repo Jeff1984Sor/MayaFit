@@ -1,7 +1,7 @@
 # CLAUDE.md — MayaFit
 
 > **Leia primeiro.** **MayaFit** (MayaCorp): gestão de estúdios (Pilates, funcional, academias), **multi-tenant com um
-> banco por estúdio** e um **admin MayaCorp** para administrar clientes, planos, contratos e cobrança.
+> banco por estúdio** e um **Admin MayaFit** para administrar clientes, planos, contratos e cobrança.
 > Nasceu como clone do `Pilates_NovaVersao` (reescrita do Studio Mayris); o Mayris vira **um estúdio** do MayaFit.
 > Nome, logo e cor de cada estúdio vêm de Configurações › Identidade; nunca deixe nome de estúdio fixo no código.
 > Referência de multi-tenant, admin e visual: o MayaJus (`C:\Users\JeffersonFernandes\Projetos\MayacorpAutomacoes_CFME`).
@@ -30,8 +30,8 @@
   links públicos (assinatura) acham o estúdio pelo host.
 - **Login curto** ("ana") pode repetir entre estúdios. No endereço principal, o catálogo resolve quando o login é único;
   ambíguo → a pessoa entra pelo endereço do estúdio.
-- **Admin MayaCorp** = cliente `tipo="mayacorp"` (banco `mayafit_mayacorp`), aberto só no domínio do admin. Rotas
-  `/api/admin/*` exigem estúdio `mayacorp` + usuário administrador. Menu "MayaCorp" (`/admin/*`): Início, Estúdios (ficha,
+- **Admin MayaFit** (nome visível; no código segue `mayacorp`) = cliente `tipo="mayacorp"` (banco `mayafit_mayacorp`), aberto só no domínio do admin. Rotas
+  `/api/admin/*` exigem estúdio `mayacorp` + usuário administrador. Menu "Admin MayaFit" (`/admin/*`): Início, Estúdios (ficha,
   domínios, plano, uso, status, usuário Suporte, acessar), Solicitações (cadastro pelo site), Planos e indicação, Contratos,
   Cobranças (Mercado Pago, régua). Os estúdios veem "Meu plano" em Minha conta.
 - Todo estúdio novo nasce com o usuário **Suporte** (`suporte.<slug>`, senha definida no admin) e um link de primeiro acesso

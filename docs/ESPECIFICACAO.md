@@ -23,7 +23,7 @@ aluno paga por mês."*
 | **Professor(a)** | Dá as aulas, registra evolução | Ver só as próprias aulas e alunos, fazer chamada e evolução pelo celular |
 | **Aluno** | Faz 1 a 3 aulas por semana | Ver horários, pedir reposição, pagar, receber lembrete |
 | **Lead** | Pessoa interessada que viu o estúdio no Instagram/Google | Ver horários e preços e agendar aula experimental sem atrito |
-| **MayaCorp (admin)** | Jefferson e equipe | Vender, ativar, cobrar e dar suporte a centenas de estúdios sem esforço manual |
+| **Admin MayaFit** | Jefferson e equipe | Vender, ativar, cobrar e dar suporte a centenas de estúdios sem esforço manual |
 
 ### 1.2 Diferenciais frente aos concorrentes
 
@@ -61,7 +61,7 @@ Regras (numeradas para referência nos testes):
 - **P5.** Extras liberados cliente a cliente: Receita Saúde, migração de dados (ETL) e catraca avulsa para o Pro.
 - **P6.** Cobrança pelo Mercado Pago: link mensal por e-mail (Pix, cartão, boleto) ou assinatura no cartão. Régua de avisos: 3 dias antes, no dia, 3 e 10 dias depois.
 - **P7.** Inadimplência: 10 dias após o vencimento o estúdio fica **suspenso** (continua entrando, com faixa de aviso e link de pagamento). Com 30 dias passa a **inativo** (não entra), só por ação manual da MayaCorp. Os dados nunca são apagados.
-- **P8.** Recurso fora do plano aparece no menu com cadeado e a mensagem "Disponível no plano X", com botão para falar com a MayaCorp. Nunca some sem explicação.
+- **P8.** Recurso fora do plano aparece no menu com cadeado e a mensagem "Disponível no plano X", com botão para falar com o MayaFit. Nunca some sem explicação.
 
 ---
 
@@ -69,7 +69,7 @@ Regras (numeradas para referência nos testes):
 
 - **Um banco por estúdio** (`mayafit_<slug>`) e o banco de controle `mayafit_controle`. Isolamento físico: um estúdio nunca enxerga dado de outro, nem por erro de consulta.
 - Cada estúdio tem o endereço `<slug>.<domínio base>` e pode ter domínio próprio. Por esse endereço entram o sistema, o app do aluno, o site e os links de assinatura.
-- Admin MayaCorp num domínio próprio, com banco próprio.
+- Admin MayaFit num domínio próprio, com banco próprio.
 - Stack: FastAPI + SQLAlchemy + Alembic (Python 3.12), Next.js + Tailwind + shadcn/ui, PostgreSQL 16, worker próprio, nginx + systemd na VPS. Homologação antes de produção, com tag `vN` em produção.
 - Segurança: login curto + senha (Argon2), JWT com refresh rotativo, bloqueio por tentativas, permissões negadas por padrão, auditoria imutável e segredos de integração cifrados (Fernet) e somente-escrita.
 
@@ -128,10 +128,10 @@ Abaixo, o escopo e o resultado esperado de cada um.
 - PWA instalável com a marca do estúdio, entrada por código de 6 dígitos no WhatsApp (válido por 10 minutos).
 - Funções: próximas aulas, pedido de reposição, desmarcação com 6 h, recibos e QR de check-in.
 
-### 4.8 Admin MayaCorp *(novo)*
+### 4.8 Admin MayaFit *(novo)*
 - **Início:** MRR, crescimento, churn, receita de 12 meses, testes que vencem em 7 dias, cobranças vencidas e funil de solicitações.
 - **Estúdios:** lista com status, plano e uso vs. limite. A ficha tem dados comerciais, domínios, recursos extras, usuários, cobranças, contratos, linha do tempo e "saúde" (último acesso, uso, inadimplência). Ações de um clique: estender o teste, suspender, reativar, reenviar o acesso e definir a senha do Suporte.
-- **Solicitações:** cadastro pelo site da MayaCorp, aprovado em um clique. O estúdio nasce com banco, subdomínio, usuário Suporte e link de primeiro acesso.
+- **Solicitações:** cadastro pelo site do MayaFit, aprovado em um clique. O estúdio nasce com banco, subdomínio, usuário Suporte e link de primeiro acesso.
 - **Planos e indicação:** planos, preços, limites e recursos, política de indicação e senha do usuário Suporte.
 - **Contratos:** modelos com variáveis, gerados e enviados por e-mail.
 - **Cobranças:** conta do Mercado Pago (somente-escrita, com teste), régua, geração automática, cobrança avulsa e baixa manual.
@@ -147,13 +147,13 @@ Abaixo, o escopo e o resultado esperado de cada um.
 
 ## 5. Jornadas ponta a ponta (critérios de aceite do produto)
 
-1. **Venda:** a dona do estúdio preenche o cadastro no site da MayaCorp. O admin aprova em um clique, e ela recebe o e-mail de boas-vindas, cria o próprio login e entra em `<slug>.mayafit…` com 60 dias de teste.
+1. **Venda:** a dona do estúdio preenche o cadastro no site do MayaFit. O admin aprova em um clique, e ela recebe o e-mail de boas-vindas, cria o próprio login e entra em `<slug>.mayafit…` com 60 dias de teste.
 2. **Primeiros passos:** no painel, um passo a passo guia o cadastro de unidade, serviço, plano, profissional e horários e a publicação do site. Em menos de 30 minutos o estúdio está operando.
 3. **Captação:** um lead agenda aula experimental pelo site e cai no CRM. A secretária confirma pelo WhatsApp com um clique, o lead faz a aula e vira aluno com contrato assinado pelo celular.
 4. **Rotina:** o aluno recebe lembrete da aula, faz check-in pelo rosto no totem, a catraca libera e a presença é registrada. A professora registra a evolução pelo celular com ajuda da IA.
 5. **Dinheiro:** a mensalidade vence, o aviso sai pelo WhatsApp, o aluno paga, a baixa é feita, a NFS-e é emitida sozinha e o recibo chega por e-mail. A DRE do mês fecha sem planilha.
 6. **Parceiros:** a reserva do Wellhub/TotalPass ocupa a vaga na grade e o check-in é validado. No fim do mês, o relatório confere o repasse.
-7. **MayaCorp:** o teste acaba e a 1ª cobrança sai pelo Mercado Pago. Se não for paga, a régua avisa e o estúdio fica suspenso. Quando paga, ele é reativado sozinho. O admin acompanha MRR e churn.
+7. **Admin MayaFit:** o teste acaba e a 1ª cobrança sai pelo Mercado Pago. Se não for paga, a régua avisa e o estúdio fica suspenso. Quando paga, ele é reativado sozinho. O admin acompanha MRR e churn.
 
 ---
 

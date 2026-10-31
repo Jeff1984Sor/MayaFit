@@ -34,6 +34,7 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+import { ChartColumn, ListTodo, Target } from "lucide-react"; // CRM de vendas
 
 export interface NavItem {
   label: string;
@@ -71,6 +72,15 @@ export const NAV: NavGrupo[] = [
   {
     titulo: "Alunos",
     itens: [{ label: "Alunos", href: "/alunos", icone: UsersRound, permissao: "alunos.ver" }],
+  },
+  {
+    titulo: "Vendas",
+    itens: [
+      { label: "Funil de vendas", href: "/crm", icone: Target, permissao: "crm.ver", exato: true, planejado: false },
+      { label: "Leads", href: "/crm/leads", icone: UsersRound, permissao: "crm.ver", planejado: false },
+      { label: "Tarefas de vendas", href: "/crm/tarefas", icone: ListTodo, permissao: "crm.ver", planejado: false },
+      { label: "Relatório de vendas", href: "/crm/relatorio", icone: ChartColumn, permissao: "crm.ver", planejado: false },
+    ],
   },
   {
     titulo: "Contratos",

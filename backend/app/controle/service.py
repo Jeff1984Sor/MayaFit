@@ -429,14 +429,40 @@ def _estudio_do_cliente(slug: str) -> Estudio:
         return Estudio(slug=c.slug, banco=c.banco, mayacorp=c.tipo == "mayacorp")
 
 
+def endereco_do_estudio(slug: str | None = None) -> str:
+    """URL base do frontend para links (convite, redefinir senha, primeiro acesso): o endereço do estúdio
+    (`<slug>.<DOMINIO_BASE>` se cadastrado, senão o 1º domínio dele), com o esquema e a porta do FRONTEND_URL.
+    Sem estúdio/domínio: o FRONTEND_URL. `slug=None` = o estúdio atual."""
+    from urllib.parse import urlsplit, urlunsplit
+
+    from app.core.config import settings
+
+    base = settings.frontend_url.rstrip("/")
+    slug = slug or (tenancy.atual().slug if tenancy.atual() else None)
+    if not slug or not tenancy.multi():
+        return base
+
+    def buscar():
+        with SessaoControle() as db:
+            hosts = list(db.scalars(select(Dominio.host).join(Cliente).where(Cliente.slug == slug).order_by(Dominio.id)))
+        padrao = dominio_padrao(slug)
+        return padrao if padrao in hosts else (hosts[0] if hosts else None)
+
+    host = _memo("endereco", slug, buscar)
+    if not host:
+        return base
+    partes = urlsplit(base)
+    netloc = f"{host}:{partes.port}" if partes.port else host
+    return urlunsplit((partes.scheme, netloc, partes.path, "", "")).rstrip("/")
+
+
 def link_primeiro_acesso(slug: str, email: str) -> str:
     """Link de boas-vindas (vale 7 dias): o dono cria o usuário master. O token assinado carrega o estúdio (`est`)."""
-    from app.core.config import settings
     from app.core.security import criar_token
 
     with tenancy.usando(_estudio_do_cliente(slug)):
         token = criar_token(slug, "primeiro", {"email": (email or "").strip().lower()})
-    return f"{settings.frontend_url.rstrip('/')}/primeiro-acesso?token={token}"
+    return f"{endereco_do_estudio(slug)}/primeiro-acesso?token={token}"
 
 
 def estudio_mayacorp() -> Estudio | None:

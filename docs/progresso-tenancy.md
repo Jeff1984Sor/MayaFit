@@ -74,7 +74,9 @@
 7. No endereço de um estúdio inativo, o login não cai no catálogo (não "escorrega" para outro estúdio).
 8. **Link de redefinição/convite**: a tabela `recuperacao_senha` mora no banco do estúdio, então o token do link é
    `<slug>.<aleatório>` (o digest guardado cobre o texto inteiro, slug incluído): trocar o slug só faz procurar um digest
-   inexistente noutro banco. O link continua `…/redefinir-senha?token=…` (o frontend não muda) e funciona no endereço principal.
+   inexistente noutro banco. O link continua `…/redefinir-senha?token=…` (o frontend não muda) e funciona em qualquer endereço.
+   **Endereço dos links** (convite, redefinir senha, primeiro acesso): o do estúdio (`<slug>.<DOMINIO_BASE>` se cadastrado,
+   senão o 1º domínio dele), com esquema e porta do `FRONTEND_URL` (`service.endereco_do_estudio`); sem domínio, `FRONTEND_URL`.
 9. **Primeiro acesso**: token JWT `typ=primeiro`, 7 dias, `est=<slug>`, `email`; `GET` valida e devolve
    `{estudio, email}`; `POST {token, nome, email, login, senha}` cria o master (perfil administrador) e já devolve os
    tokens; 409 se o estúdio já tem administrador além do Suporte (uso único na prática).
@@ -123,8 +125,11 @@
   (regra 13), `app/core/routes/auth.py` (login/forgot/reset por estúdio, primeiro acesso, `/me` com `estudio`),
   `app/core/schemas.py` (`EstudioInfo`, `PrimeiroAcessoIn/Info`, `UsuarioMe.estudio`), `app/core/config.py`
   (`DOMINIO_BASE`), `app/core/permissoes.py` (+1 linha em `PUBLICAS`: `/api/auth/primeiro-acesso`).
-- `app/controle/service.py`, `sincronia.py`, `cli.py`; `alembic_controle/` + `alembic_controle.ini` (migration
-  `0001_controle_inicial`); `alembic/env.py` aceita `cfg.attributes["connection"]`; migration `0002_usuario_suporte`.
+- `app/controle/service.py`, `sincronia.py`, `cli.py`; `alembic_controle/` + `alembic_controle.ini` (migrations
+  `0001_controle_inicial` e `0002_controle_evento_cliente`; `app/controle/models.py` = a versão do agente do admin, com
+  `EventoCliente` e os novos preços padrão de excedente — `alembic check` sem diferenças);
+- `app/core/email.py`: `enviar(..., html=None, imagens=None)` → multipart/alternative (texto + HTML) e, com `imagens`
+  `{cid: (bytes, mime)}`, multipart/related com as imagens embutidas (`<img src="cid:logo">`); `alembic/env.py` aceita `cfg.attributes["connection"]`; migration `0002_usuario_suporte`.
 - `app/main.py` (middleware, handler 401, `migrar_todos()` na subida), `app/worker.py` (por estúdio + `global_`,
   tarefa `controle-uso-dos-estudios`), `app/seed.py` e `app/criar_usuario.py` (`--estudio`), `app/demo.py` (novo).
 - Frontend: os dois BFFs repassam `X-Forwarded-Host`; o BFF da equipe aceita `auth/primeiro-acesso` (público; o POST
@@ -162,6 +167,7 @@ migrar(estudio) -> None; migrar_controle() -> None; migrar_todos() -> list[str]
 provisionar(slug, nome, *, admin_email, admin_nome="", dias_teste=None, dominios=None, tipo="estudio",
             admin_login=None, admin_senha=None, primeiro_acesso=False, **ficha) -> tuple[Cliente, str]
 link_primeiro_acesso(slug, email) -> str
+endereco_do_estudio(slug=None) -> str        # base dos links (domínio do estúdio ou FRONTEND_URL)
 estudio_mayacorp() -> Estudio | None; endereco_do_painel() -> str | None
 zerar_senha_suporte(slug, senha_hash) -> bool
 definir_status(slug, status) -> Cliente
@@ -171,7 +177,8 @@ registrar_principal_se_faltar(slug=None) -> str | None
 sincronizar_usuario(slug, usuario_id, login | None) -> None; sincronizar_todos(slug) -> int; chave_do_usuario(u)
 ```
 
-Notas: `provisionar` sem `admin_login` (e sem `primeiro_acesso`) usa a parte do e-mail antes do `@`. No admin
+Notas: `provisionar(**ficha)` repassa a ficha ao `Cliente` (documento, responsavel, email_financeiro, telefone, plano_id,
+ciclo, inicio_contrato, observacao, indicado_por_id, extras…). `provisionar` sem `admin_login` (e sem `primeiro_acesso`) usa a parte do e-mail antes do `@`. No admin
 (`tipo="mayacorp"`) não nasce Suporte, a Identidade se chama "MayaFit" e não entra o subdomínio padrão.
 `migrar_controle` chama `app.controle.planos.garantir_padrao(db)` se esse módulo existir.
 
@@ -206,7 +213,5 @@ imprime as variáveis (`DATABASE_URL`, `STORAGE_DIR`, `DOMINIO_BASE`) para subir
 - **Tokens antigos** (sem `est`) param de valer ao ligar o modo multi: todos entram de novo uma vez.
 - **nginx/deploy**: cada domínio de estúdio precisa apontar para o servidor e ter certificado (curinga
   `*.DOMINIO_BASE` recomendado); o nginx deve repassar o `Host` original.
-- **Links de e-mail** usam `FRONTEND_URL`; poderiam usar o domínio do estúdio (`dominio_padrao`) para a marca certa
-  na tela de redefinição.
 - Cache de 60 s do controle por processo: mudar status/domínio no admin leva até 60 s para valer nos outros processos.
 - Postgres: cada estúdio abre até 5 conexões por processo (pool 2 + 3); revisar `max_connections` com muitos estúdios.

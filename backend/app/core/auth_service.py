@@ -148,6 +148,15 @@ def _invalidar_pendentes(db: Session, u: Usuario, canal: str) -> None:
                                               RecuperacaoSenha.usado_em.is_(None)).values(usado_em=agora()))
 
 
+def _endereco() -> str:
+    """Base dos links: o endereço do estúdio no modo multi (a tela abre com a marca dele); senão o FRONTEND_URL."""
+    if tenancy.multi() and tenancy.atual() is not None:
+        from app.controle import service
+
+        return service.endereco_do_estudio()
+    return settings.frontend_url.rstrip("/")
+
+
 def criar_link_email(db: Session, u: Usuario, minutos: int | None = None) -> str:
     """Cria o token de uso único e devolve o link para o frontend (o token em claro NUNCA fica no banco)."""
     _invalidar_pendentes(db, u, "email")
@@ -157,7 +166,7 @@ def criar_link_email(db: Session, u: Usuario, minutos: int | None = None) -> str
     db.add(RecuperacaoSenha(usuario_id=u.id, canal="email", digest=hash_token(token),
                             expira_em=agora() + timedelta(minutes=minutos or settings.recuperacao_email_minutos)))
     db.flush()
-    return f"{settings.frontend_url.rstrip('/')}/redefinir-senha?token={token}"
+    return f"{_endereco()}/redefinir-senha?token={token}"
 
 
 def enviar_link_email(db: Session, u: Usuario, *, convite: bool = False) -> bool:

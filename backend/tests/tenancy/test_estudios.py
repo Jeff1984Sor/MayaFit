@@ -140,7 +140,7 @@ def test_uso_gravado_no_controle(multi):
 def test_provisionar_cria_suporte_e_primeiro_acesso_uma_vez(multi, client, monkeypatch):
     monkeypatch.setattr(settings, "dominio_base", "mayafit.test")
     cliente, link = multi.provisionar("gama", "Studio Gama", admin_email="dono@gama.com", primeiro_acesso=True)
-    assert cliente.status == "ativo" and "/primeiro-acesso?token=" in link
+    assert cliente.status == "ativo" and link.startswith("http://gama.mayafit.test:3000/primeiro-acesso?token=")
     assert multi.por_host("gama.mayafit.test") == multi.por_slug("gama")  # subdomínio padrão entrou sozinho
     with tenancy.usando(multi.por_slug("gama")), SessionLocal() as db:
         sup = db.scalar(select(Usuario).where(Usuario.suporte.is_(True)))
@@ -184,6 +184,7 @@ def test_convite_e_reset_por_link_levam_o_estudio(multi, client, emails):
     (para, _, corpo), = emails
     token = corpo.split("token=")[1].split()[0]
     assert para == ["carlos@alfa.com"] and token.startswith("alfa.")
+    assert f"http://{HOST_ALFA}:3000/redefinir-senha?token=" in corpo  # o link abre no endereço do estúdio
     # o link funciona no endereço principal: o estúdio vem do próprio token
     assert client.post("/api/auth/reset", json={"token": token, "senha": "Nova@Senha9"}).status_code == 200
     assert client.get("/api/auth/me", headers=bearer(entrar(client, "carlos", "Nova@Senha9"))).status_code == 200
@@ -238,3 +239,20 @@ def test_registra_o_estudio_do_banco_principal():
         assert service.por_login("ana.mayris").slug == "estudio-mayris"
         with tenancy.usando(service.por_slug("estudio-mayris")):
             assert tenancy.pasta_base() == Path(settings.storage_dir)  # o principal continua em storage/
+
+
+def test_email_com_html_e_imagem_embutida():
+    import email
+    from pathlib import Path
+
+    from app.core import email as mail
+    from app.core import storage
+
+    png = b"\x89PNG\r\n\x1a\n" + b"0" * 20
+    assert mail.enviar(["x@y.com"], "Teste HTML", "texto puro", html='<p>Oi <img src="cid:logo"></p>',
+                       imagens={"logo": (png, "image/png")})
+    eml = max((storage.raiz() / "outbox").glob("*.eml"), key=lambda p: p.stat().st_mtime)
+    msg = email.message_from_bytes(Path(eml).read_bytes())
+    tipos = [p.get_content_type() for p in msg.walk()]
+    assert tipos[:2] == ["multipart/alternative", "text/plain"] and "multipart/related" in tipos
+    assert "text/html" in tipos and "image/png" in tipos

@@ -10,7 +10,7 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.core import audit, escopo
+from app.core import audit, escopo, tenancy
 from app.core.db import agora, get_db
 from app.core.models import Usuario
 from app.core.permissoes import permissao_da_rota
@@ -70,6 +70,8 @@ def usuario_do_token(db: Session, token: str) -> Usuario:
         uid = int(payload["sub"])
     except (jwt.PyJWTError, ValueError):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Sessão expirada. Entre novamente.") from None
+    if not tenancy.token_do_estudio_atual(payload):  # um banco por estúdio: o token só vale no estúdio que o emitiu
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Sessão expirada. Entre novamente.")
     usuario = db.get(Usuario, uid)
     if not usuario or not usuario.ativo or not usuario.acesso_sistema:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Sessão expirada. Entre novamente.")

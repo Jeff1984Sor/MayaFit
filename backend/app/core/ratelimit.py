@@ -67,6 +67,14 @@ memoria = LimiteMemoria()
 banco = LimiteBanco()
 
 
+def _ha_banco() -> bool:
+    """Um banco por estúdio: antes de o estúdio ser identificado (login no endereço principal) não há banco onde
+    contar; nesse caso o limite fica na memória do processo."""
+    from app.core import tenancy
+
+    return not tenancy.multi() or tenancy.atual() is not None
+
+
 def ip_do_cliente(request: Request) -> str:
     fwd = request.headers.get("x-forwarded-for")
     if fwd:
@@ -80,7 +88,7 @@ def verificar(request: Request, nome: str, max_eventos: int, janela_s: float, ch
     if not settings.rate_limit_ativo:
         return
     k = f"{nome}:{chave or ip_do_cliente(request)}"
-    if settings.rate_limit_backend == "banco" and db is not None:
+    if settings.rate_limit_backend == "banco" and db is not None and _ha_banco():
         espera = banco.registrar(db, k, max_eventos, janela_s)
     else:
         espera = memoria.registrar(k, max_eventos, janela_s)

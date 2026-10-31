@@ -10,7 +10,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.core import audit
+from app.core import audit, tenancy
 from app.core import email as mail
 from app.core.config import settings
 from app.core.db import agora
@@ -72,6 +72,8 @@ def rotacionar_refresh(db: Session, token: str, ip: str | None) -> tuple[Usuario
         uid = int(payload["sub"])
     except (jwt.PyJWTError, ValueError):
         raise erro from None
+    if not tenancy.token_do_estudio_atual(payload):
+        raise erro
     u = db.get(Usuario, uid)
     linha = db.get(RefreshToken, payload["jti"])
     if not u or not pode_entrar(u) or not linha or linha.usuario_id != u.id or payload.get("tv") != u.token_version:
@@ -150,6 +152,8 @@ def criar_link_email(db: Session, u: Usuario, minutos: int | None = None) -> str
     """Cria o token de uso único e devolve o link para o frontend (o token em claro NUNCA fica no banco)."""
     _invalidar_pendentes(db, u, "email")
     token = secrets.token_urlsafe(32)
+    if tenancy.multi() and (esc := tenancy.atual()) is not None:
+        token = f"{esc.slug}.{token}"  # um banco por estúdio: o link diz o estúdio (o digest cobre o slug: não se forja)
     db.add(RecuperacaoSenha(usuario_id=u.id, canal="email", digest=hash_token(token),
                             expira_em=agora() + timedelta(minutes=minutos or settings.recuperacao_email_minutos)))
     db.flush()
@@ -191,8 +195,25 @@ def enviar_codigo_whatsapp(db: Session, u: Usuario) -> bool:
     return get_notificador().enviar_texto(fone, texto)
 
 
+def estudio_do_link(token: str) -> bool:
+    """Um banco por estúdio: o token do link de redefinição/convite começa com `<slug>.` e define o estúdio do pedido.
+    False = link sem estúdio válido (inexistente ou inativo). Com um banco só, não faz nada."""
+    if not tenancy.multi():
+        return True
+    from app.controle import service
+
+    slug, _, resto = (token or "").partition(".")
+    esc = service.por_slug(slug) if resto and service.SLUG.match(slug) else None
+    if esc is None:
+        return False
+    tenancy.definir(esc)
+    return True
+
+
 def redefinir_por_token(db: Session, token: str, nova: str, ip: str | None) -> Usuario:
     erro = HTTPException(status.HTTP_400_BAD_REQUEST, MSG_RESET_INVALIDO)
+    if not estudio_do_link(token):
+        raise erro
     linha = db.scalar(select(RecuperacaoSenha).where(RecuperacaoSenha.digest == hash_token(token),
                                                      RecuperacaoSenha.canal == "email"))
     now = agora()

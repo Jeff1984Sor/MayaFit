@@ -117,6 +117,7 @@ A = "/api"
 PUBLICAS: list[tuple[str, str]] = [
     ("GET", r"/api/health$"),
     ("POST", r"/api/auth/(login|refresh|forgot|reset|forgot-codigo|reset-codigo)$"),
+    ("*", r"/api/auth/primeiro-acesso$"),  # link de boas-vindas de estúdio novo (token assinado com prazo)
     ("GET", r"/api/public/(identidade|logo)$"),
     ("GET", r"/api/arquivos-publicos/[^/]+$"),  # link assinado com prazo
     ("*", r"/api/(docs|openapi\.json|redoc).*"),  # só existem com DEBUG (ver main.py)

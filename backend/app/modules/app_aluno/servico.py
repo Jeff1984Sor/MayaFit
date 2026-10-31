@@ -23,8 +23,10 @@ import jwt
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
+from app.core import tenancy
 from app.core.config import settings
 from app.core.db import agora as agora_utc
+from app.core.estudio_http import definir_pelo_token
 from app.core.security import hash_token
 from app.domain import documentos, status_aula
 from app.domain.financeiro import hoje_de_negocio
@@ -145,6 +147,7 @@ def _emitir(aluno_id: int, tipo: str, validade: timedelta, agora: datetime) -> s
         "iat": agora,
         "exp": agora + validade,
         "jti": secrets.token_hex(16),
+        **tenancy.claims(),  # um banco por estúdio: o token do aluno só vale no estúdio dele (claim `est`)
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 
@@ -170,6 +173,8 @@ def decodificar(token: str, tipo: str) -> int:
         )
         if p.get("typ") != tipo:
             raise jwt.InvalidTokenError("tipo")
+        if not tenancy.token_do_estudio_atual(p):
+            raise jwt.InvalidTokenError("estúdio")
         return int(p["sub"])
     except (jwt.PyJWTError, ValueError):
         raise NaoAutenticado("Sessão expirada. Entre novamente.") from None
@@ -212,6 +217,7 @@ def verificar_codigo(db: Session, cpf_bruto: str, codigo_bruto: str, *, agora: d
 
 
 def aluno_do_token(db: Session, token: str, tipo: str = TIPO_ACCESS) -> Aluno:
+    definir_pelo_token(token)  # refresh chega no corpo: o estúdio vem do próprio token (um banco por estúdio)
     aluno = db.get(Aluno, decodificar(token, tipo))
     if aluno is None or StatusAluno(aluno.status) != StatusAluno.ATIVO:
         raise NaoAutenticado("Sessão expirada. Entre novamente.")

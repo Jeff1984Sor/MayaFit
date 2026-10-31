@@ -14,7 +14,7 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
-from app.core import links
+from app.core import links, tenancy
 from app.core.config import settings
 
 
@@ -69,7 +69,8 @@ def categoria_do_caminho(rel: str) -> Categoria:
 
 
 def raiz() -> Path:
-    p = Path(settings.storage_dir).resolve()
+    """Pasta do estúdio atual: `storage/` com um banco só (ou no estúdio principal), `storage/estudios/<slug>` nos demais."""
+    p = tenancy.pasta_base().resolve()
     p.mkdir(parents=True, exist_ok=True)
     return p
 

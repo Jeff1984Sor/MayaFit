@@ -53,6 +53,8 @@ class Usuario(Base, Timestamped):
     ultima_atividade: Mapped[datetime | None] = mapped_column(UtcDateTime())
     tentativas_falhas: Mapped[int] = mapped_column(Integer, default=0)
     bloqueado_ate: Mapped[datetime | None] = mapped_column(UtcDateTime())
+    # Usuário "Suporte" da MayaCorp (criado em todo estúdio novo; não conta no limite de usuários do plano)
+    suporte: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
 
     perfil_acesso: Mapped["PerfilAcesso | None"] = relationship()
 

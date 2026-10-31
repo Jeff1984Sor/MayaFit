@@ -653,3 +653,14 @@ def contagens_do_dia(db: Session, agora: datetime | None = None) -> dict:
         select(RegistroAcesso.metodo, func.count()).where(RegistroAcesso.em >= inicio, RegistroAcesso.permitido.is_(True),
                                                           RegistroAcesso.sentido == Sentido.entrada).group_by(RegistroAcesso.metodo)).all()}
     return {"entradas_hoje": entradas, "negados_hoje": negados, "alunos_hoje": alunos, "por_metodo": por_metodo}
+
+
+# ------------------------------------------------------------------------------------------------------ LGPD (rotina)
+def apagar_biometria_de_inativos(db: Session, agora: datetime | None = None) -> int:
+    """Cumpre o termo: quem deixa de ser aluno (cadastro INATIVO) tem a biometria apagada. Devolve quantos alunos."""
+    ids = list(db.scalars(select(DescritorFacial.aluno_id).join(Aluno, Aluno.id == DescritorFacial.aluno_id)
+                          .where(Aluno.status == StatusAluno.INATIVO).distinct()))
+    for aluno_id in ids:
+        apagar_biometria(db, db.get(Aluno, aluno_id), por_nome="Rotina automática",
+                         motivo="Aluno inativo (termo de consentimento)", agora=agora)
+    return len(ids)

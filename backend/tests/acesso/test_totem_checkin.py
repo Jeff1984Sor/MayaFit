@@ -228,3 +228,17 @@ def test_codigo_do_totem_vence(client, full, cenario, relogio):
     codigo = client.post(f"/api/acesso/alunos/{cenario.ana.id}/codigo-totem", headers=full).json()["codigo"]
     relogio.agora = AGORA + timedelta(minutes=16)
     assert client.post("/api/totem/cadastro/iniciar", headers=h(t), json={"documento": "4321", "codigo": codigo}).status_code == 403
+
+
+def test_rotina_lgpd_apaga_biometria_de_aluno_inativo(client, db, full, cenario):
+    from app.modules.acesso import tarefas
+    from app.modules.alunos.models import Aluno, StatusAluno
+
+    cadastrar_rosto(client, full, cenario.ana.id, ROSTO_ANA)
+    cadastrar_rosto(client, full, cenario.bruno.id, ROSTO_BRUNO)
+    db.get(Aluno, cenario.bruno.id).status = StatusAluno.INATIVO
+    db.commit()
+    assert tarefas.apagar_biometria_de_inativos() == 1
+    db.expire_all()
+    assert {d.aluno_id for d in db.scalars(select(DescritorFacial))} == {cenario.ana.id}
+    assert tarefas.apagar_biometria_de_inativos() == 0

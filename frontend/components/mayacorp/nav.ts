@@ -46,6 +46,10 @@ export interface NavItem {
   permissao?: string;
   /** Área planejada: aparece no menu, mas ainda não tem tela (não clicável). */
   planejado?: boolean;
+  /** Recurso do plano exigido (ex.: "crm", "nfse", "wellhub"); some se o estúdio não tiver. Sem estúdio, aparece. */
+  recurso?: string;
+  /** Selo "novo" ao lado do nome (módulo recém-lançado). */
+  novo?: boolean;
   atalho?: string;
   exato?: boolean;
 }
@@ -136,9 +140,25 @@ const NAV_CONTA: NavGrupo = {
   itens: [{ label: "Minha conta", href: "/minha-conta", icone: CircleUserRound }],
 };
 
+/**
+ * O estúdio tem o recurso? `recursos` vem de /auth/me (estudio.recursos): lista de chaves ou mapa chave → ligado.
+ * Sem informação (modo um banco só, ou backend antigo) tudo fica liberado.
+ */
+export function temRecurso(recursos: unknown, chave: string): boolean {
+  if (recursos == null) return true;
+  if (Array.isArray(recursos)) return recursos.includes(chave);
+  if (typeof recursos === "object") {
+    const v = (recursos as Record<string, unknown>)[chave];
+    return v === undefined ? true : !!v;
+  }
+  return true;
+}
+
 export interface OpcoesNav {
   /** Admin MayaCorp (`usuario.estudio.mayacorp`): só a seção Admin MayaFit + Configurações + Auditoria + Minha conta. */
   mayacorp?: boolean;
+  /** `usuario.estudio.recursos`: filtra os itens com `recurso`. */
+  recursos?: unknown;
 }
 
 /** Grupos que a pessoa vê. Sem `opcoes` (modo um banco só) o menu é o de sempre. */
@@ -148,7 +168,7 @@ export function navPara(pode: ((permissao: string) => boolean) | undefined, opco
   return base
     .map((g) => ({
       ...g,
-      itens: g.itens.filter((i) => !i.permissao || pode(i.permissao)),
+      itens: g.itens.filter((i) => (!i.permissao || pode(i.permissao)) && (!i.recurso || temRecurso(opcoes.recursos, i.recurso))),
     }))
     .filter((g) => g.itens.length > 0);
 }

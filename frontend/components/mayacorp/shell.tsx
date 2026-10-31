@@ -138,6 +138,14 @@ function ItemNav({ item, recolhido, onNavigate }: { item: NavItem; recolhido: bo
       {!recolhido && (
         <span className="relative flex-1 truncate">{item.label}</span>
       )}
+      {!recolhido && item.novo && !item.planejado && (
+        <span className="relative rounded-md bg-brand/20 px-1.5 py-0.5 text-[10px] font-semibold text-white uppercase ring-1 ring-brand/40">
+          novo
+        </span>
+      )}
+      {recolhido && item.novo && !item.planejado && (
+        <span className="absolute top-1 right-2 size-2 rounded-full bg-brand ring-2 ring-sidebar" aria-hidden />
+      )}
       {!recolhido && item.planejado && (
         <span className="relative rounded-md bg-white/8 px-1.5 py-0.5 text-[10px] font-semibold text-sidebar-foreground/70 uppercase">
           em breve
@@ -195,7 +203,7 @@ function SidebarConteudo({ recolhido, onNavigate, onRecolher }: { recolhido: boo
   const { nome_exibicao } = useBrand();
   const pathname = usePathname();
   const mayacorp = !!usuario?.estudio?.mayacorp;
-  const grupos = navPara(usuario && pode, { mayacorp });
+  const grupos = navPara(usuario && pode, { mayacorp, recursos: usuario?.estudio?.recursos });
   const { fechados, alternar } = useGruposRecolhidos();
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-sidebar text-sidebar-foreground">

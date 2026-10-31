@@ -330,7 +330,7 @@ def provisionar(slug: str, nome: str, *, admin_email: str, admin_nome: str = "",
     """Estúdio novo: banco próprio, tabelas, identidade (nome), perfis padrão, o usuário Suporte e:
     - com `primeiro_acesso`: devolve o link de boas-vindas (o dono cria o usuário master; admin_email só recebe o link);
     - senão: cria o administrador (com `admin_senha` → devolve ""; sem senha → devolve o link do convite).
-    Com DOMINIO_BASE, o subdomínio `<slug>.<DOMINIO_BASE>` entra sozinho. Sem estúdio pela metade em caso de erro."""
+    Com DOMINIO_BASE, o subdomínio `<slug>.<DOMINIO_BASE>` entra sozinho (menos no admin, que usa o domínio informado). Sem estúdio pela metade em caso de erro."""
     from app.core.db import SessionLocal
     from app.core.security import validar_politica_senha
     from app.seed import base as base_do_estudio
@@ -349,7 +349,7 @@ def provisionar(slug: str, nome: str, *, admin_email: str, admin_nome: str = "",
         if db.scalar(select(Cliente.id).where(Cliente.slug == slug)):
             raise RegraControle(f"Já existe o estúdio {slug}.")
     hosts = list(dominios or [])
-    if (padrao := dominio_padrao(slug)) and padrao not in [normalizar_host(h) for h in hosts]:
+    if tipo != "mayacorp" and (padrao := dominio_padrao(slug)) and padrao not in [normalizar_host(h) for h in hosts]:
         hosts.insert(0, padrao)
     banco = nome_do_banco(slug)
     criar_banco(banco)  # antes de registrar: sem banco, o estúdio não pode existir no controle

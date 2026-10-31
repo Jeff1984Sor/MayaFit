@@ -8,6 +8,7 @@ import {
   Compass,
   Gem,
   KeyRound,
+  Lock,
   TriangleAlert,
   LogOut,
   Menu,
@@ -46,7 +47,8 @@ import { ClientLogo, MayaCorpAssinatura } from "./brand";
 import { CommandPalette, abrirPaleta } from "./command-palette";
 import { TrocarSenhaDialog } from "./trocar-senha-dialog";
 import { UserAvatar } from "./user-avatar";
-import { ativo, itemDaRota, navPara, rotaForaDaCasa, type NavItem } from "./nav";
+import { ForaDoPlano } from "./fora-do-plano";
+import { ativo, itemDaRota, navPara, rotaForaDaCasa, temRecurso, type NavItem } from "./nav";
 import { iniciarTour, TourGuiado } from "./tour";
 import { SemAcesso } from "./sem-acesso";
 
@@ -146,6 +148,9 @@ function ItemNav({ item, recolhido, onNavigate }: { item: NavItem; recolhido: bo
       {recolhido && item.novo && !item.planejado && (
         <span className="absolute top-1 right-2 size-2 rounded-full bg-brand ring-2 ring-sidebar" aria-hidden />
       )}
+      {!recolhido && item.bloqueado && !item.planejado && (
+        <Lock className="relative size-3.5 shrink-0 text-sidebar-foreground/50" aria-label="Fora do seu plano" />
+      )}
       {!recolhido && item.planejado && (
         <span className="relative rounded-md bg-white/8 px-1.5 py-0.5 text-[10px] font-semibold text-sidebar-foreground/70 uppercase">
           em breve
@@ -158,6 +163,7 @@ function ItemNav({ item, recolhido, onNavigate }: { item: NavItem; recolhido: bo
     recolhido && "justify-center px-0",
     on ? "text-white" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-white",
     item.planejado && "cursor-not-allowed opacity-60 hover:bg-transparent",
+    item.bloqueado && !on && "opacity-70",
   );
   const el = item.planejado ? (
     <span className={classe}>{conteudo}</span>
@@ -173,6 +179,7 @@ function ItemNav({ item, recolhido, onNavigate }: { item: NavItem; recolhido: bo
       <TooltipContent side="right" sideOffset={10}>
         {item.label}
         {item.planejado && " · em breve"}
+        {item.bloqueado && " · fora do seu plano"}
       </TooltipContent>
     </Tooltip>
   );
@@ -427,6 +434,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // bloqueio leve por página: o servidor já recusa os dados, aqui só trocamos a tela por um aviso amigável
   const rota = itemDaRota(pathname);
   const bloqueada = (!!rota && !!rota.permissao && !pode(rota.permissao)) || (!!usuario && rotaForaDaCasa(pathname, mayacorp));
+  // recurso fora do plano (regra P8): no lugar da página, o cadeado com o plano que libera
+  const foraDoPlano = !mayacorp && !!rota?.recurso && !!usuario?.estudio && !temRecurso(usuario.estudio.recursos, rota.recurso);
   // o admin MayaCorp não tem painel do estúdio: a tela inicial dele é /admin
   useEffect(() => {
     if (mayacorp && pathname === "/dashboard") router.replace("/admin");
@@ -470,7 +479,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <main className="min-h-dvh pt-[calc(var(--tb)+var(--faixa))] transition-[padding] duration-200 lg:pl-(--sb)">
         <FaixaEstudio />
-        <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{bloqueada ? <SemAcesso /> : children}</div>
+        <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{bloqueada ? <SemAcesso /> : foraDoPlano && rota?.recurso ? <ForaDoPlano recurso={rota.recurso} nome={rota.label} /> : children}</div>
       </main>
       <TourGuiado />
     </>

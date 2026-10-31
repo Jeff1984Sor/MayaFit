@@ -111,7 +111,12 @@ def recursos_do(slug: str) -> list[str]:
             c = db.scalar(select(Cliente).where(Cliente.slug == slug))
             if c is None:
                 return []
-            itens = list((c.plano.recursos if c.plano else None) or []) + list(c.extras or [])
+            if c.plano is None:  # sem plano (estúdio antigo ou combinado à parte): tudo liberado
+                from app.controle.planos import RECURSOS
+
+                itens = list(RECURSOS) + list(c.extras or [])
+            else:
+                itens = list(c.plano.recursos or []) + list(c.extras or [])
             return list(dict.fromkeys(itens))
     return list(_memo("recursos", slug, buscar))
 

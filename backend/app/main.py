@@ -15,6 +15,7 @@ from app.core import tenancy
 from app.core.config import BASE_DIR, settings
 from app.core.deps import get_contexto
 from app.core.estudio_http import EstudioMiddleware
+from app.core.recursos_http import RecursoDoPlanoMiddleware
 from app.core.routes import arquivos, auditoria, auth, config, public
 from app.core.tenancy import EstudioNaoIdentificado
 
@@ -60,6 +61,8 @@ app = FastAPI(
 )
 # Confere o Host (ALLOWED_HOSTS, aceita "*.dominio"; no modo multi também os domínios do controle) e define o estúdio
 # do pedido (token `est` ou endereço). Com um banco só, é só a conferência do Host (como o TrustedHostMiddleware).
+# bloqueio por plano: fica DENTRO do EstudioMiddleware (o último add_middleware é o mais externo)
+app.add_middleware(RecursoDoPlanoMiddleware)
 app.add_middleware(EstudioMiddleware)
 app.add_middleware(
     CORSMiddleware,

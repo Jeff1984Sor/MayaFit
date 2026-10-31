@@ -54,8 +54,10 @@ export interface NavItem {
   permissao?: string;
   /** Área planejada: aparece no menu, mas ainda não tem tela (não clicável). */
   planejado?: boolean;
-  /** Recurso do plano exigido (ex.: "crm", "nfse", "wellhub"); some se o estúdio não tiver. Sem estúdio, aparece. */
+  /** Recurso do plano exigido (ex.: "crm", "nfse"). Fora do plano o item continua no menu, com cadeado (regra P8). */
   recurso?: string;
+  /** Preenchido pelo `navPara`: o recurso não está no plano do estúdio (cadeado; a página mostra o plano que libera). */
+  bloqueado?: boolean;
   /** Selo "novo" ao lado do nome (módulo recém-lançado). */
   novo?: boolean;
   atalho?: string;
@@ -90,20 +92,20 @@ export const NAV: NavGrupo[] = [
   {
     titulo: "Vendas",
     itens: [
-      { label: "Funil de vendas", href: "/crm", icone: Target, permissao: "crm.ver", exato: true, planejado: false },
-      { label: "Leads", href: "/crm/leads", icone: UsersRound, permissao: "crm.ver", planejado: false },
-      { label: "Tarefas de vendas", href: "/crm/tarefas", icone: ListTodo, permissao: "crm.ver", planejado: false },
-      { label: "Relatório de vendas", href: "/crm/relatorio", icone: ChartColumn, permissao: "crm.ver", planejado: false },
+      { label: "Funil de vendas", href: "/crm", icone: Target, permissao: "crm.ver", exato: true, planejado: false, recurso: "crm", novo: true },
+      { label: "Leads", href: "/crm/leads", icone: UsersRound, permissao: "crm.ver", planejado: false, recurso: "crm", novo: true },
+      { label: "Tarefas de vendas", href: "/crm/tarefas", icone: ListTodo, permissao: "crm.ver", planejado: false, recurso: "crm", novo: true },
+      { label: "Relatório de vendas", href: "/crm/relatorio", icone: ChartColumn, permissao: "crm.ver", planejado: false, recurso: "crm", novo: true },
     ],
   },
   {
     titulo: "Controle de acesso",
     itens: [
-      { label: "Quem está aqui", href: "/acesso", icone: DoorOpen, permissao: "acesso.ver", planejado: false, exato: true },
-      { label: "Histórico de acessos", href: "/acesso/historico", icone: BarChart3, permissao: "acesso.ver", planejado: false },
-      { label: "Biometria e PIN", href: "/acesso/biometria", icone: ScanFace, permissao: "acesso.ver", planejado: false },
-      { label: "Catracas e totens", href: "/acesso/equipamentos", icone: Router, permissao: "acesso.ver", planejado: false },
-      { label: "Regras de acesso", href: "/acesso/configuracoes", icone: Settings2, permissao: "acesso.ver", planejado: false },
+      { label: "Quem está aqui", href: "/acesso", icone: DoorOpen, permissao: "acesso.ver", planejado: false, exato: true, recurso: "checkin", novo: true },
+      { label: "Histórico de acessos", href: "/acesso/historico", icone: BarChart3, permissao: "acesso.ver", planejado: false, recurso: "checkin", novo: true },
+      { label: "Biometria e PIN", href: "/acesso/biometria", icone: ScanFace, permissao: "acesso.ver", planejado: false, recurso: "checkin", novo: true },
+      { label: "Catracas e totens", href: "/acesso/equipamentos", icone: Router, permissao: "acesso.ver", planejado: false, recurso: "checkin", novo: true },
+      { label: "Regras de acesso", href: "/acesso/configuracoes", icone: Settings2, permissao: "acesso.ver", planejado: false, recurso: "checkin", novo: true },
     ],
   },
   {
@@ -121,10 +123,10 @@ export const NAV: NavGrupo[] = [
       { label: "Fluxo de caixa", href: "/financeiro/caixa", icone: ArrowLeftRight, permissao: "financeiro_caixa.ver" },
       { label: "DRE", href: "/financeiro/dre", icone: BarChart3, permissao: "financeiro_dre.ver" },
       { label: "Contas bancárias", href: "/financeiro/bancos", icone: Landmark, permissao: "financeiro_bancos.ver" },
-      { label: "Receita Saúde", href: "/receita-saude", icone: HeartPulse, permissao: "receita_saude.ver" },
+      { label: "Receita Saúde", href: "/receita-saude", icone: HeartPulse, permissao: "receita_saude.ver", recurso: "receita_saude" },
       { label: "Comissões", href: "/comissoes", icone: Percent, permissao: "comissoes.ver" },
-      { label: "Notas fiscais (NFS-e)", href: "/nfse", icone: FileCheck2, permissao: "nfse.ver", planejado: false },
-      { label: "Configuração fiscal", href: "/configuracoes/nfse", icone: FileCog, permissao: "nfse.configurar", planejado: false },
+      { label: "Notas fiscais (NFS-e)", href: "/nfse", icone: FileCheck2, permissao: "nfse.ver", planejado: false, recurso: "nfse", novo: true },
+      { label: "Configuração fiscal", href: "/configuracoes/nfse", icone: FileCog, permissao: "nfse.configurar", planejado: false, recurso: "nfse", novo: true },
     ],
   },
   {
@@ -145,9 +147,9 @@ export const NAV: NavGrupo[] = [
   {
     titulo: "Comunicação",
     itens: [
-      { label: "WhatsApp", href: "/comunicacao/whatsapp", icone: MessageCircle, permissao: "whatsapp.ver", planejado: false },
+      { label: "WhatsApp", href: "/comunicacao/whatsapp", icone: MessageCircle, permissao: "whatsapp.ver", planejado: false, recurso: "whatsapp" },
       { label: "Comunicados", href: "/comunicacao/comunicados", icone: Megaphone, permissao: "comunicacao.ver", planejado: false },
-      { label: "Site do estúdio", href: "/site", icone: Globe, permissao: "site.ver", planejado: false },
+      { label: "Site do estúdio", href: "/site", icone: Globe, permissao: "site.ver", planejado: false, recurso: "site", novo: true },
       { label: "Integrações", href: "/configuracoes/integracoes", icone: Link2, permissao: "integracoes.ver", planejado: false },
     ],
   },
@@ -187,7 +189,7 @@ export function temRecurso(recursos: unknown, chave: string): boolean {
 export interface OpcoesNav {
   /** Admin MayaCorp (`usuario.estudio.mayacorp`): só a seção Admin MayaFit + Configurações + Auditoria + Minha conta. */
   mayacorp?: boolean;
-  /** `usuario.estudio.recursos`: filtra os itens com `recurso`. */
+  /** `usuario.estudio.recursos`: marca com cadeado os itens com `recurso` fora do plano. */
   recursos?: unknown;
 }
 
@@ -198,7 +200,9 @@ export function navPara(pode: ((permissao: string) => boolean) | undefined, opco
   return base
     .map((g) => ({
       ...g,
-      itens: g.itens.filter((i) => (!i.permissao || pode(i.permissao)) && (!i.recurso || temRecurso(opcoes.recursos, i.recurso))),
+      itens: g.itens
+        .filter((i) => !i.permissao || pode(i.permissao))
+        .map((i) => (i.recurso && !temRecurso(opcoes.recursos, i.recurso) ? { ...i, bloqueado: true } : i)),
     }))
     .filter((g) => g.itens.length > 0);
 }

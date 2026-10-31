@@ -35,7 +35,7 @@ def test_login_pelo_endereco_e_dados_isolados(multi, client):
     me_b = client.get("/api/auth/me", headers=beta).json()
     assert (me_a["nome"], me_a["estudio"]["slug"], me_a["estudio"]["nome"]) == ("Ana Alfa", "alfa", "Studio Alfa")
     assert (me_b["nome"], me_b["estudio"]["status"]) == ("Ana Beta", "teste")
-    assert me_b["estudio"]["teste_ate"] and me_a["estudio"]["mayacorp"] is False and me_a["estudio"]["recursos"] == []
+    assert me_b["estudio"]["teste_ate"] and me_a["estudio"]["mayacorp"] is False and "nfse" in me_a["estudio"]["recursos"]  # sem plano: tudo
 
     # o que um estúdio cadastra o outro não vê (os ids até coincidem: são bancos diferentes)
     r = client.post("/api/config/usuarios", headers=alfa, json={

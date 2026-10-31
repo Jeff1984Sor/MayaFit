@@ -27,12 +27,13 @@ from app.core.security import hash_senha, validar_politica_senha
 NOME_ESTUDIO = "Estúdio Demonstração"
 
 
-def base(db: Session) -> None:
-    """Identidade, configs e perfis padrão. Idempotente: não sobrescreve o que o administrador já editou."""
+def base(db: Session, nome: str = NOME_ESTUDIO) -> None:
+    """Identidade, configs e perfis padrão. Idempotente: não sobrescreve o que o administrador já editou.
+    `nome` = nome do estúdio (o provisionamento de um estúdio novo passa o nome dele)."""
     if not db.scalar(select(Identidade.id)):
-        db.add(Identidade(id=1, nome_exibicao=NOME_ESTUDIO, assinatura_email=f"{NOME_ESTUDIO}"))
+        db.add(Identidade(id=1, nome_exibicao=nome, assinatura_email=nome))
     if not db.get(ConfigEmail, 1):
-        db.add(ConfigEmail(id=1, remetente_nome=NOME_ESTUDIO, copia_padrao=[]))
+        db.add(ConfigEmail(id=1, remetente_nome=nome, copia_padrao=[]))
     if not db.get(ConfigIA, 1):
         db.add(ConfigIA(id=1, ativo=False, provedor="openai"))
     perfis.garantir_padrao(db)
@@ -61,13 +62,28 @@ def main() -> None:
     ap.add_argument("--somente-base", action="store_true", help="não cria usuário")
     ap.add_argument("--com-admin", action="store_true", help="cria o admin mesmo fora do dev")
     ap.add_argument("--sem-migrar", action="store_true", help="não roda as migrations antes")
+    ap.add_argument("--estudio", help="um banco por estúdio: slug do estúdio (obrigatório nesse modo)")
     a = ap.parse_args()
 
-    if not a.sem_migrar:
-        from app.main import migrar
+    from app.core import tenancy
 
-        migrar()
-    with SessionLocal() as db:
+    esc = None
+    if tenancy.multi():
+        from app.controle import service
+
+        if not a.estudio or (esc := service.por_slug(a.estudio)) is None:
+            sys.exit("Um banco por estúdio: informe --estudio <slug> de um estúdio ativo (python -m app.controle.cli listar).")
+        import app.controle.sincronia  # noqa: F401  (catálogo de logins)
+    if not a.sem_migrar:
+        if esc is not None and esc.banco is not None:
+            from app.controle import service
+
+            service.migrar(esc)
+        else:
+            from app.main import migrar
+
+            migrar()
+    with tenancy.usando(esc), SessionLocal() as db:
         base(db)
         print(f"Base pronta: identidade '{NOME_ESTUDIO}', e-mail, IA e perfis de acesso padrão.")
         if a.somente_base or (settings.ambiente != "dev" and not a.com_admin):

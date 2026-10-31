@@ -118,6 +118,10 @@ PUBLICAS: list[tuple[str, str]] = [
     ("GET", r"/api/health$"),
     ("POST", r"/api/auth/(login|refresh|forgot|reset|forgot-codigo|reset-codigo)$"),
     ("GET", r"/api/public/(identidade|logo)$"),
+    # admin MayaFit (app/modules/admin_mayacorp): planos e cadastro do site, aprovação pelo link assinado do e-mail,
+    # webhook do Mercado Pago (assinatura secreta). Todas com limite por IP.
+    ("GET", r"/api/public/(planos|solicitacao)$"),
+    ("POST", r"/api/public/(cadastro|mercadopago|solicitacao/aprovar|solicitacao/recusar)$"),
     ("GET", r"/api/arquivos-publicos/[^/]+$"),  # link assinado com prazo
     ("*", r"/api/(docs|openapi\.json|redoc).*"),  # só existem com DEBUG (ver main.py)
 ]

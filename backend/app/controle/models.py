@@ -80,8 +80,8 @@ class Plano(BaseControle):
     preco_anual: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     usuarios: Mapped[int | None] = mapped_column(Integer)
     alunos_ativos: Mapped[int | None] = mapped_column(Integer)
-    preco_aluno_excedente: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("2.00"))
-    preco_usuario_adicional: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("29.90"))
+    preco_aluno_excedente: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0.50"))
+    preco_usuario_adicional: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("14.90"))
     recursos: Mapped[list[str]] = mapped_column(JSON, default=list)  # chaves de RECURSOS (app/controle/planos.py)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
     ordem: Mapped[int] = mapped_column(Integer, default=0)
@@ -215,6 +215,22 @@ class Login(BaseControle):
     chave: Mapped[str] = mapped_column(String(200), primary_key=True)  # login, minúsculo
     cliente_id: Mapped[int] = mapped_column(ForeignKey("cliente.id", ondelete="CASCADE"), primary_key=True, index=True)
     usuario_id: Mapped[int]
+
+
+class EventoCliente(BaseControle):
+    """Linha do tempo da ficha do estúdio no admin: criado, mudou plano/status, teste, cobranças, pagamentos,
+    contratos. Também é a fonte do churn (status → inativo no mês)."""
+
+    __tablename__ = "evento_cliente"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    cliente_id: Mapped[int] = mapped_column(ForeignKey("cliente.id", ondelete="CASCADE"), index=True)
+    # criado | status | plano | teste | cobranca | pagamento | contrato | dominio | acesso | ficha
+    tipo: Mapped[str] = mapped_column(String(20), index=True)
+    descricao: Mapped[str] = mapped_column(String(500))
+    dados: Mapped[dict] = mapped_column(JSON, default=dict)  # ex.: {"de": "ativo", "para": "inativo"}
+    usuario: Mapped[str | None] = mapped_column(String(150))  # quem fez (None = sistema/worker)
+    criado_em: Mapped[datetime] = mapped_column(UtcDateTime(), default=agora, index=True)
 
 
 _engine = None

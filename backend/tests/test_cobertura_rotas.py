@@ -65,6 +65,9 @@ def test_rotas_publicas_sao_so_as_esperadas():
         "GET /api/health", "POST /api/auth/login", "POST /api/auth/refresh", "POST /api/auth/forgot", "POST /api/auth/reset",
         "POST /api/auth/forgot-codigo", "POST /api/auth/reset-codigo", "GET /api/public/identidade", "GET /api/public/logo",
         "GET /api/arquivos-publicos/{token}",
+        # admin MayaFit: site (planos, cadastro), aprovação pelo link do e-mail e webhook do Mercado Pago
+        "GET /api/public/planos", "POST /api/public/cadastro", "GET /api/public/solicitacao",
+        "POST /api/public/solicitacao/aprovar", "POST /api/public/solicitacao/recusar", "POST /api/public/mercadopago",
     ])
 
 

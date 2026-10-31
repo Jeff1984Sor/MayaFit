@@ -60,7 +60,9 @@ def plano_out(p: Plano | None) -> dict | None:
 
 
 def uso_out(u: dict) -> dict:
-    return {**u, "valor_excedente": d(u["valor_excedente"])}
+    from datetime import date
+
+    return {"mes": f"{date.today():%Y-%m}", **u, "valor_excedente": d(u["valor_excedente"])}
 
 
 def dominios_out(c: Cliente) -> tuple[list[dict], str | None]:

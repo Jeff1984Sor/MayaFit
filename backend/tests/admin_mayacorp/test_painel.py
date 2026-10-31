@@ -18,6 +18,7 @@ def test_inicio_com_dados_de_demonstracao(client, fundacao, adm):
     # MRR dos planos: Lumina 89,90 − 5% (indicou o Equilíbrio) = 85,41 + Equilíbrio 1.499/12 = 124,92
     # + Corpo 49,90 + Força (suspenso também paga) 289,90 = 550,13. Excedentes: Lumina 13 alunos × 0,50 = 6,50
     assert r["mrr_planos"] == "550.13" and r["mrr_excedentes"] == "6.50" and r["mrr"] == "556.63"
+    assert r["churn_mes"] == 1 and r["novos_mes"] == 0
     assert r["churn"]["saidas_mes"] == 1 and r["churn"]["estudios"][0]["slug"] == "demo-alongar"
     assert r["churn"]["taxa_mes"] == "20.0"  # 1 saída / (4 pagantes + 1)
     assert len(r["receita_por_mes"]) == 12 and r["receita_por_mes"][-1]["mes"] == f"{date.today():%Y-%m}"

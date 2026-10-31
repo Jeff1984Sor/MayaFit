@@ -18,7 +18,7 @@ from app.core.config import settings
 from app.core.deps import Contexto, ip_cliente
 from app.core.ratelimit import limitar
 from app.modules.admin_mayacorp import schemas as sc
-from app.modules.admin_mayacorp.servico import Painel, d, plano_out
+from app.modules.admin_mayacorp.servico import Painel, plano_out
 
 log = logging.getLogger(__name__)
 
@@ -41,7 +41,8 @@ def sol_out(s: Solicitacao) -> dict:
 def planos_publicos():
     with SessaoControle() as db:
         planos.garantir_padrao(db)
-        return [{**plano_out(p), "preco_mensal": d(p.preco_mensal), "preco_anual": d(p.preco_anual)}
+        rotulos = [{"chave": k, "rotulo": v} for k, v in planos.RECURSOS.items()]
+        return [{**plano_out(p), "recursos_rotulos": [r for r in rotulos if r["chave"] in (p.recursos or [])]}
                 for p in db.scalars(select(Plano).where(Plano.ativo).order_by(Plano.ordem, Plano.id))]
 
 

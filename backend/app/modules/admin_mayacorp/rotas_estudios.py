@@ -7,6 +7,7 @@ Porte de app/controle/routes_admin.py do MayaJus. Os caminhos ficam os mesmos (`
 
 import logging
 import re
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 from sqlalchemy import func, or_, select
@@ -143,7 +144,8 @@ def boas_vindas(email: str, pessoa: str, estudio: str, link: str, dias_teste: in
 
 
 def _e_suporte(u, slug: str) -> bool:
-    return (u.login or "").lower() == f"suporte.{slug}"
+    # a fundação marca o Suporte na coluna `usuario.suporte`; sem ela, pelo login `suporte.<slug>`
+    return bool(getattr(u, "suporte", False)) or (u.login or "").lower() == f"suporte.{slug}"
 
 
 @router.post("/clientes/{cid}/boas-vindas")
@@ -281,7 +283,8 @@ def _usuario_out(u, slug: str) -> dict:
     return {"id": u.id, "nome": u.nome, "email": u.email, "login": u.login, "ativo": u.ativo,
             "acesso_sistema": u.acesso_sistema, "convite_pendente": u.convite_pendente,
             "perfil": u.perfil_acesso.nome if u.perfil_acesso else None, "administrador": u.administrador,
-            "ultimo_acesso": u.ultimo_acesso, "suporte": _e_suporte(u, slug)}
+            "ultimo_acesso": u.ultimo_acesso, "suporte": _e_suporte(u, slug),
+            "equipe_mayacorp": _e_suporte(u, slug)}  # nome do MayaJus, usado pelo frontend
 
 
 def _do_estudio(cid: int):

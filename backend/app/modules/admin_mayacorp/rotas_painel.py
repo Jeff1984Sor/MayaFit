@@ -89,6 +89,7 @@ def resumo(ctx: Painel):
                           key=lambda c: c.teste_ate)
         return {
             "clientes": len(estudios), "por_status": por_status,
+            "novos_mes": novos[mes_atual], "churn_mes": len(saiu_mes),
             "mrr": d(mrr_planos + mrr_exc), "mrr_planos": d(mrr_planos), "mrr_excedentes": d(mrr_exc),
             "crescimento": {
                 "novos_mes": novos[mes_atual], "novos_mes_anterior": novos[mes_anterior],
@@ -229,9 +230,9 @@ def reativar(cid: int, dados: sc.MotivoIn, ctx: Painel):
 def reenviar_acesso(cid: int, ctx: Painel):
     """Sem usuário master ainda: novo link de primeiro acesso. Com master: link para criar senha nova para cada
     administrador do estúdio (a senha atual continua valendo até ele trocar)."""
+    from app.controle import emails
     from app.core import auth_service
     from app.core.models import Usuario
-    from app.controle import emails
     from app.modules.admin_mayacorp.rotas_estudios import reenviar_boas_vindas
 
     with SessaoControle() as db:

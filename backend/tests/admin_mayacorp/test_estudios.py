@@ -106,6 +106,7 @@ def test_uso_foto_ou_coleta(client, fundacao, adm):
     fundacao.uso["pilates-lumina"] = {"alunos_ativos": 70, "usuarios": 3, "aulas_mes": 300}
     u = client.get(f"/api/admin/clientes/{cid}/uso", headers=adm).json()  # sem foto: coleta agora
     assert (u["alunos_ativos"], u["limite_alunos"], u["alunos_excedentes"]) == (70, 60, 10)
+    assert u["mes"] == f"{date.today():%Y-%m}" and u["aulas_mes"] == 300
     assert (u["usuarios_excedentes"], u["valor_excedente"]) == (1, "19.90")  # 10 × 0,50 + 1 × 14,90
     with SessaoControle() as ctl:
         ctl.get(Cliente, cid).uso = {"alunos_ativos": 20, "usuarios": 1}
@@ -151,7 +152,8 @@ def test_senha_do_suporte(client, db, fundacao, adm):
     assert r.status_code == 200 and r.json()["login"] == "suporte.pilates-lumina"
     assert entrar(client, "suporte.pilates-lumina", "Suporte#Teste1").status_code == 200
     lista = client.get(f"/api/admin/clientes/{cid}/usuarios", headers=adm).json()
-    assert next(u for u in lista if u["login"] == "suporte.pilates-lumina")["suporte"] is True
+    sup = next(u for u in lista if u["login"] == "suporte.pilates-lumina")
+    assert sup["suporte"] is True and sup["equipe_mayacorp"] is True
 
 
 def test_reenviar_boas_vindas_e_acesso(client, db, fundacao, adm, emails_admin):

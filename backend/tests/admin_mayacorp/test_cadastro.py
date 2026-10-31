@@ -14,6 +14,7 @@ def test_site_e_aprovacao_no_admin(client, fundacao, adm, emails_admin):
     planos = client.get("/api/public/planos").json()  # sem login: o site mostra os planos
     assert [p["nome"] for p in planos] == ["Essencial", "Estúdio", "Pro", "Rede"]
     pro = next(p for p in planos if p["nome"] == "Pro")
+    assert [x["chave"] for x in pro["recursos_rotulos"]] == pro["recursos"] and pro["alunos_ativos"] == 350
     base = {**BASE, "plano_id": pro["id"]}
     assert client.post("/api/public/cadastro", json={**base, "aceite": False}).status_code == 400
     assert client.post("/api/public/cadastro", json={**base, "documento": "123"}).status_code == 400

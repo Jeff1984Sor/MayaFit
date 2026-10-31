@@ -2,6 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import {
+  ArrowUpRight,
+  BarChart3,
   BellRing,
   Cake,
   CalendarCheck,
@@ -10,26 +12,27 @@ import {
   CircleCheckBig,
   FileClock,
   Hourglass,
-  LayoutDashboard,
   Medal,
   RefreshCw,
   Rocket,
+  Sparkles,
   UsersRound,
   Wallet,
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { useEffect } from "react";
 
-import { PageHeader } from "@/components/mayacorp/page-header";
 import { SemAcesso } from "@/components/mayacorp/sem-acesso";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useBrand } from "@/lib/brand";
-import { moeda, numero } from "@/lib/format";
+import { moeda, numero, toNum } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { ResumoPainel } from "@/lib/tipos-painel";
 
 import { GraficoAulasPorMes } from "./graficos-painel";
@@ -90,20 +93,14 @@ export function PainelResumo() {
 
   return (
     <div>
-      <PageHeader
+      <HeroPainel
         titulo={`${saudacao(hora)}, ${primeiroNome}`}
-        descricao={`${dataPorExtenso(r?.hoje)} · ${nome_exibicao}`}
-        icone={LayoutDashboard}
-        migalhas={[{ label: "Início", href: "/" }, { label: "Painel" }]}
-        acoes={
-          <>
-            {atualizadoEm && <span className="text-xs text-muted-foreground">Atualizado às {atualizadoEm}</span>}
-            <Button variant="outline" size="sm" onClick={() => q.refetch()} disabled={q.isFetching}>
-              <RefreshCw className={q.isFetching ? "animate-spin" : ""} />
-              Atualizar
-            </Button>
-          </>
-        }
+        data={dataPorExtenso(r?.hoje)}
+        estudio={nome_exibicao}
+        r={r}
+        atualizadoEm={atualizadoEm}
+        atualizando={q.isFetching}
+        onAtualizar={() => q.refetch()}
       />
 
       {q.isError && !r && (
@@ -119,7 +116,7 @@ export function PainelResumo() {
         <Secao
           titulo="Primeiros passos"
           descricao="Deixe o estúdio pronto para o primeiro aluno. Esta lista some quando o básico estiver cadastrado."
-          acao={<Rocket className="size-5 text-brand" />}
+          icone={Rocket}
           className="mb-6"
         >
           <ListaPassos passos={r.primeiros_passos.passos} />
@@ -133,6 +130,7 @@ export function PainelResumo() {
           <Secao
             titulo="Aulas por mês"
             descricao="Últimos 6 meses, sem as aulas canceladas"
+            icone={BarChart3}
             className="xl:col-span-2"
             acao={r && <span className="text-xs text-muted-foreground num">{numero(r.aulas_por_mes.total)} no período</span>}
           >
@@ -146,7 +144,16 @@ export function PainelResumo() {
           </Secao>
         )}
         {(carregando || r?.alertas.visivel) && (
-          <Secao titulo="Alertas" descricao="O que precisa da sua atenção" acao={<BellRing className="size-4 text-muted-foreground" />}>
+          <Secao
+            titulo="Alertas"
+            descricao="O que precisa da sua atenção"
+            icone={BellRing}
+            acao={
+              r && r.alertas.itens.length > 0 && (
+                <span className="rounded-full bg-danger/10 px-2 py-0.5 text-xs font-semibold text-danger-ink num">{r.alertas.itens.length}</span>
+              )
+            }
+          >
             {carregando || !r ? (
               <LinhasEsqueleto n={3} />
             ) : r.alertas.itens.length === 0 ? (
@@ -166,6 +173,7 @@ export function PainelResumo() {
         {(carregando || r?.proximas_aulas.visivel) && (
           <Secao
             titulo="Próximas aulas de hoje"
+            icone={CalendarClock}
             acao={
               r?.proximas_aulas.href && (
                 <Link href={r.proximas_aulas.href} className="text-xs font-medium text-navy hover:underline dark:text-brand">
@@ -179,26 +187,39 @@ export function PainelResumo() {
             ) : r.proximas_aulas.itens.length === 0 ? (
               <Vazio icone={CalendarClock} texto="Sem mais aulas hoje" dica="As aulas que ainda vão acontecer hoje aparecem aqui." />
             ) : (
-              <ul className="divide-y">
-                {r.proximas_aulas.itens.map((a) => (
-                  <li key={a.reserva_id} className="flex items-center gap-3 py-2">
-                    <span className="w-12 shrink-0 text-sm font-semibold num">{a.hora}</span>
+              <ol className="relative space-y-1 before:absolute before:top-2 before:bottom-2 before:left-[65px] before:w-px before:bg-border">
+                {r.proximas_aulas.itens.map((a, i) => (
+                  <motion.li
+                    key={a.reserva_id}
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.15 + i * 0.04 }}
+                    className="relative flex items-center gap-3 rounded-lg py-1.5 pr-1 transition-colors hover:bg-muted/60"
+                  >
+                    <span className="w-12 shrink-0 text-right text-xs font-semibold text-muted-foreground num">{a.hora}</span>
+                    <span
+                      className={cn(
+                        "relative z-10 size-2.5 shrink-0 rounded-full ring-4 ring-card",
+                        i === 0 ? "bg-brand shadow-[0_0_10px_var(--brand)]" : "bg-brand/40",
+                      )}
+                      aria-hidden
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium">{a.aluno ?? "Aluno reservado"}</span>
                       <span className="block truncate text-xs text-muted-foreground">{a.professor ?? "Sem profissional"}</span>
                     </span>
                     <SeloStatusAula status={a.status} />
-                  </li>
+                  </motion.li>
                 ))}
                 {r.proximas_aulas.restantes > 0 && (
-                  <li className="pt-2 text-xs text-muted-foreground">+ {r.proximas_aulas.restantes} aulas depois destas</li>
+                  <li className="pt-2 pl-[82px] text-xs text-muted-foreground">+ {r.proximas_aulas.restantes} aulas depois destas</li>
                 )}
-              </ul>
+              </ol>
             )}
           </Secao>
         )}
         {(carregando || r?.ranking_professores.visivel) && (
-          <Secao titulo="Professores no mês" descricao="Aulas do mês por profissional">
+          <Secao titulo="Professores no mês" descricao="Aulas do mês por profissional" icone={Medal}>
             {carregando || !r ? (
               <LinhasEsqueleto />
             ) : r.ranking_professores.itens.length === 0 ? (
@@ -209,7 +230,7 @@ export function PainelResumo() {
           </Secao>
         )}
         {(carregando || r?.aniversariantes.visivel) && (
-          <Secao titulo="Aniversariantes" descricao="Hoje e nos próximos 7 dias" acao={<Cake className="size-4 text-muted-foreground" />}>
+          <Secao titulo="Aniversariantes" descricao="Hoje e nos próximos 7 dias" icone={Cake}>
             {carregando || !r ? (
               <LinhasEsqueleto />
             ) : r.aniversariantes.itens.length === 0 ? (
@@ -236,13 +257,25 @@ function RankingProfessores({ itens }: { itens: { profissional_id: number; nome:
         <li key={p.profissional_id}>
           <div className="mb-1 flex items-center justify-between gap-2 text-sm">
             <span className="min-w-0 truncate">
-              <span className="mr-2 text-xs text-muted-foreground num">{i + 1}º</span>
+              <span
+                className={cn(
+                  "mr-2 inline-grid size-5 place-items-center rounded-full text-[10px] num",
+                  i === 0 ? "bg-amber-maya/20 font-bold text-warning-ink" : "bg-muted text-muted-foreground",
+                )}
+              >
+                {i + 1}º
+              </span>
               <span className="font-medium">{p.nome}</span>
             </span>
             <span className="shrink-0 text-xs text-muted-foreground num">{numero(p.total)} aulas</span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-muted" role="presentation">
-            <div className="h-full rounded-full bg-brand" style={{ width: `${Math.round((p.total / maximo) * 100)}%` }} />
+            <motion.div
+              className={cn("h-full rounded-full", i === 0 ? "brand-gradient" : "bg-brand/70")}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.round((p.total / maximo) * 100)}%` }}
+              transition={{ duration: 0.7, delay: 0.1 + i * 0.05, ease: "easeOut" }}
+            />
           </div>
         </li>
       ))}
@@ -261,6 +294,8 @@ function Kpis({ r, carregando }: { r: ResumoPainel | undefined; carregando: bool
         <KpiPainel
           titulo="Alunos ativos"
           valor={numero(k?.alunos_ativos.valor)}
+          animar={{ valor: k?.alunos_ativos.valor ?? 0, formato: numero }}
+          indice={0}
           rodape={k?.alunos_ativos.valor === 0 ? "Cadastre o primeiro aluno para começar" : "Ver alunos ativos"}
           icone={UsersRound}
           href={k?.alunos_ativos.href}
@@ -271,6 +306,9 @@ function Kpis({ r, carregando }: { r: ResumoPainel | undefined; carregando: bool
         <KpiPainel
           titulo="Aulas hoje"
           valor={numero(k?.aulas.hoje)}
+          animar={{ valor: k?.aulas.hoje ?? 0, formato: numero }}
+          serie={r?.aulas_por_mes.visivel ? r.aulas_por_mes.meses.map((m) => m.total) : undefined}
+          indice={1}
           rodape={`${numero(k?.aulas.amanha)} amanhã`}
           icone={CalendarCheck}
           href={k?.aulas.href}
@@ -281,6 +319,8 @@ function Kpis({ r, carregando }: { r: ResumoPainel | undefined; carregando: bool
         <KpiPainel
           titulo="Contratos vencendo"
           valor={numero(k?.contratos_vencendo.valor)}
+          animar={{ valor: k?.contratos_vencendo.valor ?? 0, formato: numero }}
+          indice={2}
           rodape="nos próximos 30 dias"
           icone={FileClock}
           href={k?.contratos_vencendo.href}
@@ -291,6 +331,8 @@ function Kpis({ r, carregando }: { r: ResumoPainel | undefined; carregando: bool
         <KpiPainel
           titulo="A receber (em aberto)"
           valor={moeda(k?.a_receber.valor)}
+          animar={{ valor: toNum(k?.a_receber.valor), formato: moeda }}
+          indice={3}
           rodape={`${numero(k?.a_receber.quantidade)} cobranças a vencer`}
           icone={Wallet}
           href={k?.a_receber.href}
@@ -301,6 +343,8 @@ function Kpis({ r, carregando }: { r: ResumoPainel | undefined; carregando: bool
         <KpiPainel
           titulo="Atrasado"
           valor={moeda(k?.atrasado.valor)}
+          animar={{ valor: toNum(k?.atrasado.valor), formato: moeda }}
+          indice={4}
           rodape={`${numero(k?.atrasado.quantidade)} cobranças vencidas`}
           icone={Hourglass}
           tom={(k?.atrasado.quantidade ?? 0) > 0 ? "perigo" : "neutro"}
@@ -312,6 +356,8 @@ function Kpis({ r, carregando }: { r: ResumoPainel | undefined; carregando: bool
         <KpiPainel
           titulo="Recebido no mês"
           valor={moeda(rm?.valor)}
+          animar={{ valor: toNum(rm?.valor), formato: moeda }}
+          indice={5}
           rodape={rm && <VariacaoRecebido pct={rm.variacao_pct} base={rm.anterior_ate_mesmo_dia} />}
           icone={WalletCards}
           href={rm?.href}
@@ -319,5 +365,105 @@ function Kpis({ r, carregando }: { r: ResumoPainel | undefined; carregando: bool
         />
       )}
     </div>
+  );
+}
+
+/** Faixa de boas-vindas do painel: saudação, resumo do dia e atalhos (só o que o perfil pode abrir). */
+function HeroPainel({
+  titulo,
+  data,
+  estudio,
+  r,
+  atualizadoEm,
+  atualizando,
+  onAtualizar,
+}: {
+  titulo: string;
+  data: string;
+  estudio: string;
+  r: ResumoPainel | undefined;
+  atualizadoEm: string | null;
+  atualizando: boolean;
+  onAtualizar: () => void;
+}) {
+  const { pode } = useAuth();
+  const atalhos = [
+    { label: "Aulas do dia", href: "/agenda/aulas", icone: CalendarCheck, ok: pode("aulas.ver") },
+    { label: "Grade semanal", href: "/agenda/semana", icone: CalendarDays, ok: pode("agenda.ver") },
+    { label: "Alunos", href: "/alunos", icone: UsersRound, ok: pode("alunos.ver") },
+    { label: "A receber", href: "/financeiro/receber", icone: Wallet, ok: pode("financeiro_receber.ver") },
+  ].filter((a) => a.ok);
+  const aulasHoje = r?.kpis.aulas.visivel ? (r.kpis.aulas.hoje ?? 0) : null;
+  const aniversariosHoje = r?.aniversariantes.visivel ? r.aniversariantes.itens.filter((a) => a.hoje).length : 0;
+  const alertas = r?.alertas.visivel ? r.alertas.itens.filter((a) => a.gravidade !== "info").length : 0;
+  const resumo = [
+    aulasHoje != null && `${numero(aulasHoje)} aula${aulasHoje === 1 ? "" : "s"} hoje`,
+    aniversariosHoje > 0 && `${aniversariosHoje} aniversariante${aniversariosHoje === 1 ? "" : "s"} hoje`,
+    alertas > 0 && `${alertas} alerta${alertas === 1 ? "" : "s"} para ver`,
+  ].filter(Boolean) as string[];
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="relative mb-6 overflow-hidden rounded-3xl bg-dark-maya p-6 text-white shadow-xl shadow-dark-maya/20 sm:p-8"
+      aria-labelledby="painel-titulo"
+    >
+      <div className="grid-bg absolute inset-0 opacity-50" />
+      <div className="pointer-events-none absolute -top-24 -left-16 size-72 rounded-full bg-brand/40 blur-[90px]" />
+      <div className="pointer-events-none absolute -right-20 -bottom-24 size-72 rounded-full bg-navy/90 blur-[80px]" />
+      <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
+          <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/80 backdrop-blur">
+            <Sparkles className="size-3.5 text-brand" />
+            {data}
+          </p>
+          <h1 id="painel-titulo" className="truncate text-2xl font-semibold tracking-tight sm:text-3xl">
+            {titulo}
+          </h1>
+          <p className="mt-1 text-sm text-white/60">{estudio}</p>
+          {resumo.length > 0 && (
+            <ul className="mt-4 flex flex-wrap gap-2">
+              {resumo.map((t) => (
+                <li key={t} className="rounded-lg bg-white/8 px-2.5 py-1 text-xs font-medium text-white/90 ring-1 ring-white/10">
+                  {t}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="flex flex-col gap-3 lg:items-end">
+          {atalhos.length > 0 && (
+            <nav aria-label="Atalhos" className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              {atalhos.map((a) => (
+                <Link
+                  key={a.href}
+                  href={a.href}
+                  className="group flex items-center gap-2 rounded-xl bg-white/8 px-3 py-2 text-sm font-medium ring-1 ring-white/12 backdrop-blur transition hover:bg-white/14 hover:ring-brand/50"
+                >
+                  <a.icone className="size-4 shrink-0 text-brand" />
+                  <span className="truncate">{a.label}</span>
+                  <ArrowUpRight className="ml-auto size-3.5 shrink-0 opacity-0 transition group-hover:opacity-70" />
+                </Link>
+              ))}
+            </nav>
+          )}
+          <div className="flex items-center gap-2 text-xs text-white/55">
+            {atualizadoEm && <span>Atualizado às {atualizadoEm}</span>}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onAtualizar}
+              disabled={atualizando}
+              className="h-7 text-white/80 hover:bg-white/10 hover:text-white"
+            >
+              <RefreshCw className={atualizando ? "animate-spin" : ""} />
+              Atualizar
+            </Button>
+          </div>
+        </div>
+      </div>
+    </motion.section>
   );
 }

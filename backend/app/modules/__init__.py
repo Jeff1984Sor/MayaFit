@@ -12,6 +12,15 @@ def registrar_modelos() -> None:
         financeiro,
         integracoes,
     )
-    # pacotes cujos modelos ficam em `models.py` e não são importados pelo `__init__` do pacote
-    from app.modules.app_aluno import models as _app_aluno_models  # noqa: F401
-    from app.modules.comunicacao import models as _comunicacao_models  # noqa: F401
+    # todo módulo com `models.py` entra sozinho (crm, site, acesso, wellhub, nfse... sem editar esta lista)
+    import importlib
+    import pkgutil
+
+    import app.modules as pacote
+
+    for info in pkgutil.iter_modules(pacote.__path__):
+        try:
+            importlib.import_module(f"app.modules.{info.name}.models")
+        except ModuleNotFoundError as e:
+            if e.name != f"app.modules.{info.name}.models":
+                raise

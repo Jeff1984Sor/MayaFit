@@ -78,6 +78,10 @@ CATALOGO: list[dict] = [
     {"grupo": "Site", "recursos": [
         {"id": "site", "nome": "Site do estúdio (editar, publicar e ver contatos recebidos)", "acoes": ["ver", "editar"]},
     ]},
+    {"grupo": "Controle de acesso", "recursos": [
+        {"id": "acesso", "nome": "Controle de acesso (check-in, biometria, catracas e totens)",
+         "acoes": ["ver", "configurar", "liberar_manual"]},
+    ]},
 ]
 
 TODAS = {f"{r['id']}.{a}" for g in CATALOGO for r in g["recursos"] for a in r["acoes"]}
@@ -136,7 +140,8 @@ PUBLICAS: list[tuple[str, str]] = [
 
 # Rotas com autenticação PRÓPRIA (chave de API, token de webhook, sessão do aluno). Não usam o login dos usuários,
 # mas cada rota declarada nestes prefixos precisa ter ao menos uma dependência de autenticação (verificado em teste).
-PUBLICAS_AUTENTICACAO_PROPRIA: list[str] = [r"/api/integracao/", r"/api/aluno-app/", r"/api/webhooks/"]
+PUBLICAS_AUTENTICACAO_PROPRIA: list[str] = [r"/api/integracao/", r"/api/aluno-app/", r"/api/webhooks/",
+                                             r"/api/totem/", r"/api/catraca-agente/"]  # acesso: token do dispositivo
 # site público do estúdio: só leitura + formulário de contato, cada rota com rate limit (módulo site)
 PUBLICAS_AUTENTICACAO_PROPRIA.append(r"/api/site-publico/")
 

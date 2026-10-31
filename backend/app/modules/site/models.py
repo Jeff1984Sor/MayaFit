@@ -10,6 +10,7 @@ from typing import Any
 from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
+import app.core.models  # noqa: F401  (registra `usuario`, alvo da FK de publicado_por_id)
 from app.core.db import Base, Timestamped, UtcDateTime
 
 

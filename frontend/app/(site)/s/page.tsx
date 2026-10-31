@@ -109,7 +109,10 @@ export default async function SitePublico() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: dadosEstruturados(p, origem) }} />
-      <PaginaSite pagina={p} />
+      {/* #site-publico: o AuthProvider do layout raiz não consulta a sessão aqui (ver lib/auth.tsx) */}
+      <div id="site-publico">
+        <PaginaSite pagina={p} />
+      </div>
     </>
   );
 }

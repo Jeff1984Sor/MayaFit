@@ -138,6 +138,11 @@ CRM. Meta de aceite do produto: um estúdio recém-criado publica o site em meno
   - `backend/app/core/permissoes.py`: grupo "Site" no fim do `CATALOGO` e `PUBLICAS_AUTENTICACAO_PROPRIA.append(r"/api/site-publico/")`.
   - `frontend/proxy.ts`: `s|sitemap\.xml` em `PUBLICAS` e o rewrite de `/` → `/s` sem sessão.
   - `frontend/components/mayacorp/nav.ts`: item "Site do estúdio" no grupo Comunicação (+ import do ícone `Globe`).
+  - **`frontend/lib/auth.tsx` (fora da lista combinada, necessário):** o `AuthProvider` do layout raiz consulta
+    `/auth/me` em toda página e, com 401, o `api.ts` manda para o login — o site público (inclusive na raiz `/`) era
+    redirecionado. Acrescentei ao `enabled` da consulta `&& !document.getElementById("site-publico")`; as páginas
+    públicas do site têm esse id. Coordenador: confirmar ou trocar por outro mecanismo (ex.: layout raiz sem providers
+    para o grupo `(site)`).
 
 ## 5. Demo
 
@@ -145,7 +150,14 @@ CRM. Meta de aceite do produto: um estúdio recém-criado publica o site em meno
 3 profissionais com cargo/bio, depoimentos, FAQ extra, endereço, horário, WhatsApp/Instagram, SEO e privacidade, e
 publica. Não mexe em site que já foi publicado alguma vez. Não cria cadastros (usa os que a demo dos outros módulos criar).
 
-## 6. Pendências e pedidos ao coordenador
+## 6. Verificação manual (smoke test)
+
+API + `next start` com banco sintético e a demo: `/` sem sessão abre o site (title, OpenGraph, canonical, JSON-LD,
+planos com preço, grade); `/dashboard` sem sessão vai ao login; `robots.txt`, `sitemap.xml` e `/s/privacidade` 200.
+Capturas no Edge headless dos 3 temas (1280 px e 700 px) conferidas: Aurora (serifa, luzes), Zen (areia, arco),
+Energia (escuro, caixa alta, listras).
+
+## 7. Pendências e pedidos ao coordenador
 
 1. **`app/modules/__init__.py › registrar_modelos()`**: acrescentar `from app.modules.site import models as _site_models`
    para o autogenerate do Alembic e o ETL enxergarem as tabelas `site_config`/`site_contato` (hoje elas entram pelo

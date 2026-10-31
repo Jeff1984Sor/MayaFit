@@ -34,7 +34,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     staleTime: 5 * 60_000,
     retry: false,
     meta: { silencioso: true },
-    enabled: typeof window !== "undefined" && !/^\/(login|esqueci-senha|redefinir-senha|assinar|app)(\/|$)/.test(window.location.pathname),
+    // páginas públicas (e o site do estúdio, marcado com #site-publico, que pode estar na raiz "/") não têm sessão
+    enabled:
+      typeof window !== "undefined" &&
+      !/^\/(login|esqueci-senha|redefinir-senha|assinar|app)(\/|$)/.test(window.location.pathname) &&
+      !document.getElementById("site-publico"),
   });
 
   const login = useCallback(

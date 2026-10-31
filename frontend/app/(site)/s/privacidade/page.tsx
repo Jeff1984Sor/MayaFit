@@ -72,6 +72,7 @@ export default async function Privacidade() {
 
   return (
     <div
+      id="site-publico"
       className={cn("site min-h-dvh px-5 py-12", FONTES_SITE)}
       data-tema={p.tema}
       style={{ ["--s-marca" as string]: p.identidade.cor, ["--s-marca-txt" as string]: corSobre(p.identidade.cor) }}

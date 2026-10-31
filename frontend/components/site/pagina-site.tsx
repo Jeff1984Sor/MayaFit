@@ -268,7 +268,7 @@ function Hero({ p }: P) {
             {botoes}
             {selos}
           </div>
-          <div className="s-entra s-entra-2 relative mx-auto w-full max-w-md">
+          <div className="s-entra s-entra-2 relative mx-auto w-full max-w-xs @3xl:max-w-md">
             <div className="absolute -inset-3 rounded-t-full border border-(--s-marca)/40" />
             <Foto foto={h.foto} alt={titulo} prioridade className="aspect-[4/5] rounded-t-full" />
           </div>
@@ -296,7 +296,7 @@ function Hero({ p }: P) {
           foto={h.foto}
           alt={titulo}
           prioridade
-          className="s-entra s-entra-2 aspect-[4/5] rounded-[2.5rem_2.5rem_2.5rem_7rem] shadow-2xl shadow-(--s-marca)/20"
+          className="s-entra s-entra-2 aspect-[4/3] rounded-[2rem_2rem_2rem_5rem] shadow-2xl shadow-(--s-marca)/20 @4xl:aspect-[4/5] @4xl:rounded-[2.5rem_2.5rem_2.5rem_7rem]"
         />
       </div>
     </section>
@@ -309,7 +309,7 @@ function Sobre({ p, alt }: P & { alt: boolean }) {
   return (
     <Bloco id="sobre" alt={alt}>
       <div className="grid items-center gap-12 @4xl:grid-cols-2">
-        <Foto foto={s.foto} alt={s.titulo} className="s-revela aspect-[5/4] rounded-(--s-raio)" />
+        <Foto foto={s.foto} alt={s.titulo} className="s-revela aspect-[16/10] rounded-(--s-raio) @4xl:aspect-[5/4]" />
         <div className="s-revela">
           <p className="s-sobrelinha mb-3">Quem somos</p>
           <h2 className="s-titulo text-[2.1rem] @3xl:text-5xl">{s.titulo}</h2>

@@ -1,18 +1,47 @@
-# CLAUDE.md — Pilates Nova Versão
+# CLAUDE.md — MayaFit
 
-> **Leia primeiro.** Reescrita do sistema do **Studio Mayris Pilates** (hoje em Django, em produção) para a stack do MayaJus.
-> **Regra de ouro: não perder nenhuma funcionalidade nem nenhum dado do sistema antigo.**
-> Contrato e lista de paridade: [`docs/MIGRACAO.md`](docs/MIGRACAO.md). Inventário completo do sistema antigo: [`docs/inventario-pilates-django.md`](docs/inventario-pilates-django.md).
+> **Leia primeiro.** **MayaFit** (MayaCorp): gestão de estúdios (Pilates, funcional, academias), **multi-tenant com um
+> banco por estúdio** e um **admin MayaCorp** para administrar clientes, planos, contratos e cobrança.
+> Nasceu como clone do `Pilates_NovaVersao` (reescrita do Studio Mayris); o Mayris vira **um estúdio** do MayaFit.
+> Nome, logo e cor de cada estúdio vêm de Configurações › Identidade; nunca deixe nome de estúdio fixo no código.
+> Referência de multi-tenant, admin e visual: o MayaJus (`C:\Users\JeffersonFernandes\Projetos\MayacorpAutomacoes_CFME`).
+> Herdado do Pilates: [`docs/MIGRACAO.md`](docs/MIGRACAO.md) e [`docs/inventario-pilates-django.md`](docs/inventario-pilates-django.md).
 
-## Origem e destino
-
-| | Sistema antigo (NÃO MEXER) | Este projeto |
+| | Origem | Este projeto |
 |---|---|---|
-| Código | `C:\Users\JeffersonFernandes\Projetos\Pilates\PilatesFinal` (Django + `api/` FastAPI) | `C:\Users\JeffersonFernandes\Projetos\Pilates_NovaVersao` |
-| Produção | `https://mayris.mayacorp.com.br` (VPS `ssh flicsales`, pasta `~/pilates`, serviços `pilates-web`/`pilates-api`) | ainda não existe; terá hml e prod próprios |
-| Banco | PostgreSQL `pilates` (tabelas `core_*`, ~17 mil linhas) | **banco novo**, esquema limpo; os dados antigos entram por ETL **só no final** |
+| Código | `C:\Users\JeffersonFernandes\Projetos\Pilates_NovaVersao` (não mexer) | `C:\Users\JeffersonFernandes\Projetos\MayaFit` · `https://github.com/Jeff1984Sor/MayaFit.git` |
+| Sistema antigo do Mayris | Django em `https://mayris.mayacorp.com.br` (NÃO MEXER) | os dados entram por ETL no banco do estúdio `mayris`, só no final |
 
-**Proibido nesta fase:** alterar o sistema antigo, conectar na produção antiga, ou baixar dados reais de alunos para a máquina de desenvolvimento. Testes usam dados sintéticos. A carga real do banco antigo é uma etapa final, com autorização explícita do Jefferson.
+**Proibido:** alterar o sistema antigo, conectar na produção antiga ou baixar dados reais de alunos para a máquina de desenvolvimento. Testes usam dados sintéticos. A carga real é etapa final, com autorização explícita do Jefferson.
+
+## Multi-tenant (um banco por estúdio)
+
+- **Banco de controle `mayafit_controle`** (mesmo servidor do `DATABASE_URL`; no SQLite, `data/mayafit_controle.db`).
+  Modelos em `app/controle/models.py` (Cliente = estúdio, Plano, Dominio, Login, Cobranca, ContratoCliente, Solicitacao…),
+  migrations próprias em `alembic_controle/`. Nenhum estúdio enxerga este banco.
+- **Liga sozinho**: sem o banco de controle, o sistema roda como antes (um banco só, `storage/`) — é assim em dev e nos testes
+  dos módulos. Com ele, o modo multi liga (nada no `.env`). Igual ao MayaJus (`app/core/tenancy.py`).
+- **Cada estúdio = um banco `mayafit_<slug>`** com o esquema inteiro (`alembic/`). Os módulos continuam sem `tenant_id`.
+  Arquivos em `storage/estudios/<slug>/`.
+- `app/core/tenancy.py`: `Estudio(slug, banco, mayacorp)` numa ContextVar; `SessionLocal` escolhe o banco por ela
+  (`SessaoDoEstudio.get_bind`). Quem define o estúdio: o middleware (`app/core/estudio_http.py`) pelo token (claim `est`)
+  ou pelo host (`X-Forwarded-Host` vindo do BFF, senão `Host`); o login, pelo host ou pelo catálogo de logins; o worker, percorrendo os ativos.
+- **Endereços**: cada estúdio ganha `<slug>.<DOMINIO_BASE>` e pode ter domínio próprio (tabela `dominio`). App do aluno e
+  links públicos (assinatura) acham o estúdio pelo host.
+- **Login curto** ("ana") pode repetir entre estúdios. No endereço principal, o catálogo resolve quando o login é único;
+  ambíguo → a pessoa entra pelo endereço do estúdio.
+- **Admin MayaCorp** = cliente `tipo="mayacorp"` (banco `mayafit_mayacorp`), aberto só no domínio do admin. Rotas
+  `/api/admin/*` exigem estúdio `mayacorp` + usuário administrador. Menu "MayaCorp" (`/admin/*`): Início, Estúdios (ficha,
+  domínios, plano, uso, status, usuário Suporte, acessar), Solicitações (cadastro pelo site), Planos e indicação, Contratos,
+  Cobranças (Mercado Pago, régua). Os estúdios veem "Meu plano" em Minha conta.
+- Todo estúdio novo nasce com o usuário **Suporte** (`suporte.<slug>`, senha definida no admin) e um link de primeiro acesso
+  para o dono criar o usuário master. Status: `teste | ativo | suspenso | inativo` (suspenso entra e é avisado; inativo não entra).
+
+## Visual
+
+Padrão MayaCorp do MayaJus (shell, menu lateral, cards, tabelas, login): Navy `#1E2D6B`, Indigo `#7C8FFF`, Teal `#1A8F5E`,
+Amber `#F5A623`, Red `#C94343`, Dark `#0F1729`, Gray `#F7F8FC`. Fontes DM Sans + JetBrains Mono (números).
+Telas de cadastro: cabeçalho → toolbar (busca + filtros + Novo) → tabela → vazio ilustrado → paginação → modal → confirmação → toast.
 
 ## Stack (igual à do MayaJus, `C:\Users\JeffersonFernandes\Projetos\MayacorpAutomacoes_CFME`)
 
@@ -23,7 +52,7 @@
 
 ## Decisões já tomadas
 
-1. **Um estúdio por instalação** (sem `tenant_id`). Identidade (nome, logo, cor) vem do banco (white-label), nunca fixa no código.
+1. **Um estúdio por banco** (sem `tenant_id`; ver Multi-tenant). Identidade (nome, logo, cor) vem do banco (white-label), nunca fixa no código.
 2. **Segurança por padrão**: toda rota exige login; rota pública precisa estar numa lista explícita. JWT com expiração e refresh, OTP com limite de tentativas, segredos de integração **cifrados** no banco (Fernet com `MASTER_KEY`), webhooks exigem token, arquivos só por rota autenticada ou por link assinado com prazo.
 3. **Perfis de acesso por catálogo de permissões** (como no MayaJus), com perfis padrão: Administrador, Recepção/Gestão, Financeiro, **Professor** (só as próprias aulas, nada de financeiro) e Somente leitura. Profissional **sem login** é permitido.
 4. **Regras de negócio ficam em `app/domain/` como funções puras com testes** (preço, parcelas, capacidade, reposição, status...). Rota só orquestra. Nada de regra escondida em CRUD genérico.

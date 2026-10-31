@@ -33,13 +33,16 @@ export type StatusEstudio = "teste" | "ativo" | "suspenso" | "inativo";
 export interface EstudioMe {
   slug: string;
   nome: string;
-  /** Admin MayaCorp: o menu mostra só a seção MayaCorp + Configurações. */
+  /** Admin MayaFit: o menu mostra só a seção Admin MayaFit + Configurações. */
   mayacorp: boolean;
   status: StatusEstudio;
   /** Fim do período de teste (YYYY-MM-DD). */
   teste_ate: string | null;
-  recursos?: unknown;
+  /** Recursos do plano + extras liberados (chaves de app/controle/planos.py). */
+  recursos: string[] | null;
 }
+
+export type EstudioInfo = EstudioMe;
 
 export interface IdentidadePublica {
   nome_exibicao: string;

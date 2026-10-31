@@ -18,7 +18,7 @@ from app.core.config import settings
 
 _hasher = PasswordHash.recommended()
 
-TokenTipo = Literal["access", "refresh"]
+TokenTipo = Literal["access", "refresh", "primeiro"]
 
 _DJANGO_ALGS = {"pbkdf2_sha256": "sha256", "pbkdf2_sha1": "sha1"}
 _MAX_ITERACOES_DJANGO = 5_000_000  # evita DoS por hash adulterado com iterações absurdas
@@ -72,12 +72,17 @@ def gastar_tempo_de_verificacao(senha: str) -> None:
 
 
 def criar_token(sub: str, tipo: TokenTipo, extra: dict[str, Any] | None = None) -> str:
+    """No modo um banco por estúdio, todo token leva o estúdio atual na claim `est` (app.core.tenancy)."""
+    from app.core import tenancy
+
     duracao = {
         "access": timedelta(minutes=settings.jwt_access_minutes),
         "refresh": timedelta(days=settings.jwt_refresh_days),
+        "primeiro": timedelta(days=7),  # boas-vindas: o dono do estúdio novo cria o usuário master
     }[tipo]
     now = datetime.now(UTC)
     payload = {"sub": sub, "typ": tipo, "iat": now, "exp": now + duracao, "jti": secrets.token_hex(16)}
+    payload.update(tenancy.claims())
     payload.update(extra or {})
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 

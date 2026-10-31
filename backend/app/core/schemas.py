@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
@@ -56,6 +56,32 @@ class MePatch(BaseModel):
     telefone: str | None = Field(default=None, max_length=20)
 
 
+class PrimeiroAcessoIn(BaseModel):
+    """Link de boas-vindas de um estúdio novo: o dono cria o usuário master (login + senha)."""
+
+    token: str
+    nome: str = Field(min_length=3, max_length=150)
+    email: EmailStr
+    login: str = Field(pattern=LOGIN_RE, description="Como a pessoa vai entrar (não é o e-mail)")
+    senha: str = Field(max_length=256)
+
+
+class PrimeiroAcessoInfo(BaseModel):
+    estudio: str
+    email: str | None = None
+
+
+class EstudioInfo(BaseModel):
+    """Estúdio do usuário logado (um banco por estúdio). `recursos` = do plano + extras liberados."""
+
+    slug: str
+    nome: str
+    mayacorp: bool = False
+    status: str
+    teste_ate: date | None = None
+    recursos: list[str] = []
+
+
 class UsuarioMe(Schema):
     id: int
     nome: str
@@ -69,6 +95,7 @@ class UsuarioMe(Schema):
     administrador: bool = False
     somente_proprias_aulas: bool = False
     permissoes: list[str] = []
+    estudio: EstudioInfo | None = None  # None com um banco só
 
 
 class TokenOut(Schema):

@@ -7,13 +7,16 @@ from pathlib import Path
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
+import app.controle.sincronia  # noqa: F401  (catálogo de logins do controle, um banco por estúdio)
 import app.modules as modulos_pkg
+from app.core import tenancy
 from app.core.config import BASE_DIR, settings
 from app.core.deps import get_contexto
+from app.core.estudio_http import EstudioMiddleware
 from app.core.routes import arquivos, auditoria, auth, config, public
+from app.core.tenancy import EstudioNaoIdentificado
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logging.getLogger("httpx").setLevel(logging.WARNING)  # o httpx loga a URL completa de cada chamada
@@ -39,6 +42,10 @@ async def lifespan(_: FastAPI):
         Path(settings.database_url.removeprefix("sqlite:///")).parent.mkdir(parents=True, exist_ok=True)
     if settings.migrar_na_subida:
         migrar()
+        if tenancy.multi():  # um banco por estúdio: o controle e o banco de cada estúdio ativo
+            from app.controle import service as controle
+
+            controle.migrar_todos()
     yield
 
 
@@ -51,7 +58,9 @@ app = FastAPI(
     redoc_url=None,
     openapi_url="/api/openapi.json" if settings.debug else None,
 )
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
+# Confere o Host (ALLOWED_HOSTS, aceita "*.dominio"; no modo multi também os domínios do controle) e define o estúdio
+# do pedido (token `est` ou endereço). Com um banco só, é só a conferência do Host (como o TrustedHostMiddleware).
+app.add_middleware(EstudioMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -91,6 +100,12 @@ def _traduzir(e: dict) -> str:
     if tipo.startswith("date"):
         return "data inválida"
     return e.get("msg", "valor inválido")
+
+
+@app.exception_handler(EstudioNaoIdentificado)
+async def _sem_estudio(_: Request, exc: EstudioNaoIdentificado):
+    """Um banco por estúdio: pedido sem estúdio identificado não abre banco nenhum; pede login de novo."""
+    return JSONResponse(status_code=401, content={"detail": "Sessão expirada. Entre novamente."})
 
 
 @app.exception_handler(RequestValidationError)

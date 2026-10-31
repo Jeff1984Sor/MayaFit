@@ -24,6 +24,19 @@ def migracao():
     return mod
 
 
+def _seguintes():
+    """As migrations depois da 0001 (ex.: 0002_usuario_suporte), em ordem, para o esquema bater com os modelos."""
+    mods = []
+    for arq in sorted(ARQUIVO.parent.glob("0*.py")):
+        if arq == ARQUIVO:
+            continue
+        spec = importlib.util.spec_from_file_location(f"migracao_{arq.stem}", arq)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        mods.append(mod)
+    return mods
+
+
 def _esquema(eng):
     insp = inspect(eng)
     saida = {}
@@ -43,6 +56,8 @@ def test_upgrade_igual_ao_create_all_e_downgrade_limpa(migracao):
     with via_alembic.begin() as conn:
         with Operations.context(MigrationContext.configure(conn)):
             migracao.upgrade()
+            for m in _seguintes():
+                m.upgrade()
     via_modelos = create_engine("sqlite://")
     Base.metadata.create_all(via_modelos)
     a, b = _esquema(via_alembic), _esquema(via_modelos)
@@ -60,6 +75,8 @@ def test_upgrade_igual_ao_create_all_e_downgrade_limpa(migracao):
         )
     with via_alembic.begin() as conn:
         with Operations.context(MigrationContext.configure(conn)):
+            for m in reversed(_seguintes()):
+                m.downgrade()
             migracao.downgrade()
     assert inspect(via_alembic).get_table_names() == []
 

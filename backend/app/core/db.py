@@ -56,9 +56,11 @@ engine = create_engine(
     connect_args={"check_same_thread": False, "timeout": 30} if _is_sqlite else {},
 )
 
-if _is_sqlite:
 
-    @event.listens_for(engine, "connect")
+def ligar_pragmas_sqlite(e) -> None:
+    """WAL + chaves estrangeiras em todo banco SQLite (o principal e o de cada estúdio)."""
+
+    @event.listens_for(e, "connect")
     def _sqlite_pragmas(conn, _):
         cur = conn.cursor()
         cur.execute("PRAGMA journal_mode=WAL")
@@ -66,7 +68,20 @@ if _is_sqlite:
         cur.close()
 
 
-SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+if _is_sqlite:
+    ligar_pragmas_sqlite(engine)
+
+
+class SessaoDoEstudio(Session):
+    """Escolhe o banco na hora da consulta, pelo estúdio atual (app.core.tenancy); com um banco só, é o `engine`."""
+
+    def get_bind(self, mapper=None, clause=None, **kw):
+        from app.core import tenancy
+
+        return tenancy.engine_atual()
+
+
+SessionLocal = sessionmaker(class_=SessaoDoEstudio, autoflush=False, expire_on_commit=False)
 
 
 def get_db() -> Iterator[Session]:

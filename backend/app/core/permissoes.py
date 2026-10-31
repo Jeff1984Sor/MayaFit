@@ -124,6 +124,7 @@ A = "/api"
 PUBLICAS: list[tuple[str, str]] = [
     ("GET", r"/api/health$"),
     ("POST", r"/api/auth/(login|refresh|forgot|reset|forgot-codigo|reset-codigo)$"),
+    ("*", r"/api/auth/primeiro-acesso$"),  # link de boas-vindas de estúdio novo (token assinado com prazo)
     ("GET", r"/api/public/(identidade|logo)$"),
     # admin MayaFit (app/modules/admin_mayacorp): planos e cadastro do site, aprovação pelo link assinado do e-mail,
     # webhook do Mercado Pago (assinatura secreta). Todas com limite por IP.

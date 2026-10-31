@@ -64,7 +64,7 @@ def test_rotas_publicas_sao_so_as_esperadas():
     assert publicas == sorted([
         "GET /api/health", "POST /api/auth/login", "POST /api/auth/refresh", "POST /api/auth/forgot", "POST /api/auth/reset",
         "POST /api/auth/forgot-codigo", "POST /api/auth/reset-codigo", "GET /api/public/identidade", "GET /api/public/logo",
-        "GET /api/arquivos-publicos/{token}",
+        "GET /api/arquivos-publicos/{token}", "GET /api/auth/primeiro-acesso", "POST /api/auth/primeiro-acesso",
         # admin MayaFit: site (planos, cadastro), aprovação pelo link do e-mail e webhook do Mercado Pago
         "GET /api/public/planos", "POST /api/public/cadastro", "GET /api/public/solicitacao",
         "POST /api/public/solicitacao/aprovar", "POST /api/public/solicitacao/recusar", "POST /api/public/mercadopago",
@@ -75,7 +75,8 @@ def test_rotas_publicas_de_credencial_tem_rate_limit():
     from app.core.ratelimit import limitar
 
     esperadas = {"/api/auth/login", "/api/auth/refresh", "/api/auth/forgot", "/api/auth/reset", "/api/auth/forgot-codigo",
-                 "/api/auth/reset-codigo", "/api/arquivos-publicos/{token}", "/api/public/identidade", "/api/public/logo"}
+                 "/api/auth/reset-codigo", "/api/arquivos-publicos/{token}", "/api/public/identidade", "/api/public/logo",
+                 "/api/auth/primeiro-acesso"}
     sem_limite = []
     for r, _metodo, _caminho in _rotas():
         if r.path in esperadas:

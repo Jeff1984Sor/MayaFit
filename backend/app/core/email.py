@@ -27,8 +27,13 @@ def enviar(
     anexos: list[tuple[str, bytes, str]] | None = None,
     cc: list[str] | None = None,
     cco: list[str] | None = None,
+    html: str | None = None,
+    imagens: dict[str, tuple[bytes, str]] | None = None,
 ) -> bool:
-    """Devolve True se a mensagem foi entregue ao SMTP (ou gravada no outbox em dev)."""
+    """Devolve True se a mensagem foi entregue ao SMTP (ou gravada no outbox em dev).
+
+    `html`: versão HTML (multipart/alternative; `corpo` fica como texto puro). `imagens`: {cid: (bytes, mime)} embutidas
+    no HTML (`<img src="cid:logo">`), em multipart/related."""
     config = db.get(ConfigEmail, 1) if db is not None else None
     msg = EmailMessage()
     if config:
@@ -41,6 +46,13 @@ def enviar(
     todos = list(dict.fromkeys([*para, *(cc or []), *(cco or [])]))  # Cco só entra na lista de entrega
     msg["Subject"] = assunto
     msg.set_content(corpo)
+    if html:
+        msg.add_alternative(html, subtype="html")
+        if imagens:
+            parte_html = msg.get_payload()[-1]
+            for cid, (dados, mime) in imagens.items():
+                maintype, subtype = mime.split("/", 1)
+                parte_html.add_related(dados, maintype=maintype, subtype=subtype, cid=f"<{cid}>")
     for nome, dados, mime in anexos or []:
         maintype, subtype = mime.split("/", 1)
         msg.add_attachment(dados, maintype=maintype, subtype=subtype, filename=nome)

@@ -60,6 +60,9 @@ class Settings(BaseSettings):
     smtp_from: str = "MayaFit <nao-responda@localhost>"
 
     frontend_url: str = "http://localhost:3000"
+    # Um banco por estúdio (liga sozinho quando o banco `mayafit_controle` existe; ver app/core/tenancy.py):
+    # cada estúdio novo ganha o endereço <slug>.<dominio_base> (ex.: "mayafit.com.br"). Vazio = só domínios cadastrados.
+    dominio_base: str | None = None
 
     # Dev: a API roda as tarefas periódicas em thread e aplica as migrations ao subir.
     # Produção: worker_embutido=false (o serviço app.worker faz) e migrations no deploy.

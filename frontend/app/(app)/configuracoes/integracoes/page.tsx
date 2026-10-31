@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, KeyRound, Link2, Mail, MessageCircle, Sparkles, Ticket } from "lucide-react";
+import { ArrowRight, Dumbbell, KeyRound, Link2, Mail, MessageCircle, Sparkles, Ticket } from "lucide-react";
 import Link from "next/link";
 
 import { PageHeader } from "@/components/mayacorp/page-header";
@@ -57,6 +57,14 @@ export default function IntegracoesPage() {
       href: "/configuracoes/integracoes/totalpass",
       icone: Ticket,
       disponivel: DISPONIVEL.totalpass,
+      permissao: "integracoes.ver",
+    },
+    {
+      titulo: "Wellhub",
+      descricao: "Antigo Gympass: reservas e check-ins dos alunos, grade publicada com as vagas e conferência do repasse mensal.",
+      href: "/configuracoes/integracoes/wellhub",
+      icone: Dumbbell,
+      disponivel: true,
       permissao: "integracoes.ver",
     },
     {

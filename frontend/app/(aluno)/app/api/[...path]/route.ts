@@ -36,6 +36,9 @@ function encaminhar(req: NextRequest, caminho: string, corpo: ArrayBuffer | unde
   if (access) h.set("authorization", `Bearer ${access}`);
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim();
   if (ip) h.set("x-forwarded-for", ip);
+  // um banco por estúdio: a API descobre o estúdio pelo endereço que a pessoa abriu
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  if (host) h.set("x-forwarded-host", host.split(",")[0].trim());
   return fetch(`${API}/aluno-app/${caminho}${req.nextUrl.search}`, {
     method: req.method,
     headers: h,

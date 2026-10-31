@@ -24,6 +24,17 @@ export interface UsuarioMe {
   administrador: boolean;
   somente_proprias_aulas: boolean;
   permissoes: string[];
+  /** Um banco por estúdio: o estúdio do usuário logado (null/ausente com um banco só). */
+  estudio?: EstudioInfo | null;
+}
+
+export interface EstudioInfo {
+  slug: string;
+  nome: string;
+  mayacorp: boolean;
+  status: "teste" | "ativo" | "suspenso" | "inativo";
+  teste_ate: string | null;
+  recursos: string[];
 }
 
 export interface IdentidadePublica {

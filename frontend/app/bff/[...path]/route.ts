@@ -15,9 +15,9 @@ import { ACCESS, REFRESH, aplicarCookies, limparCookies, renovar, type Par } fro
 const API = (process.env.INTERNAL_API_URL ?? "http://localhost:8000/api").replace(/\/$/, "");
 const REPASSAR = ["content-type", "content-disposition", "cache-control", "retry-after", "content-length"];
 // rotas que respondem com TokenOut: viram cookies
-const ROTAS_DE_TOKEN = new Set(["auth/login", "auth/trocar-senha"]);
+const ROTAS_DE_TOKEN = new Set(["auth/login", "auth/trocar-senha", "auth/primeiro-acesso"]);
 // rotas que não exigem sessão
-const ROTAS_PUBLICAS = /^(auth\/(login|forgot|reset|forgot-codigo|reset-codigo)|public\/.*|arquivos-publicos\/.*|assinar\/(contrato|termo)\/.*|health)$/;
+const ROTAS_PUBLICAS = /^(auth\/(login|forgot|reset|forgot-codigo|reset-codigo|primeiro-acesso)|public\/.*|arquivos-publicos\/.*|assinar\/(contrato|termo)\/.*|health)$/;
 
 function origemValida(req: NextRequest): boolean {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return true;
@@ -38,6 +38,9 @@ async function encaminhar(req: NextRequest, caminho: string, corpo: ArrayBuffer 
   if (access) h.set("authorization", `Bearer ${access}`);
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim();
   if (ip) h.set("x-forwarded-for", ip);
+  // um banco por estúdio: a API descobre o estúdio pelo endereço que a pessoa abriu
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  if (host) h.set("x-forwarded-host", host.split(",")[0].trim());
   return fetch(`${API}/${caminho}${req.nextUrl.search}`, { method: req.method, headers: h, body: corpo, redirect: "manual", cache: "no-store" });
 }
 
@@ -94,7 +97,7 @@ async function tratar(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   }
 
   let out: NextResponse;
-  if (ROTAS_DE_TOKEN.has(caminho) && r.ok) {
+  if (ROTAS_DE_TOKEN.has(caminho) && req.method === "POST" && r.ok) {
     const t = (await r.json()) as { access_token: string; refresh_token: string; usuario: unknown };
     novoPar = { access: t.access_token, refresh: t.refresh_token };
     out = NextResponse.json({ usuario: t.usuario });

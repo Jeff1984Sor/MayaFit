@@ -158,9 +158,6 @@ def sugestao_proxima_acao(
         return None
     if situacao == SituacaoLead.PERDIDO:
         return "Lead perdido. Se a situação mudou, reabra e retome o contato."
-    if not tem_interacao:
-        return ("Faça o primeiro contato agora: quem responde em minutos converte bem mais."
-                if tem_telefone else "Sem telefone: peça o WhatsApp por e-mail para agilizar o contato.")
     if aula_status == StatusAulaExperimental.AGENDADA and aula_em:
         if aula_em >= agora:
             if aula_em - agora <= timedelta(hours=30):
@@ -171,6 +168,9 @@ def sugestao_proxima_acao(
         return "Faltou à aula experimental: ofereça um novo horário."
     if aula_status == StatusAulaExperimental.REALIZADA and marco != MarcoEtapa.PROPOSTA:
         return "Fez a aula experimental: envie a proposta enquanto a experiência está fresca."
+    if not tem_interacao:
+        return ("Faça o primeiro contato agora: quem responde em minutos converte bem mais."
+                if tem_telefone else "Sem telefone: peça o WhatsApp por e-mail para agilizar o contato.")
     if marco == MarcoEtapa.PROPOSTA:
         if (dias_sem_contato or 0) >= 2:
             return "Proposta enviada há dias: faça um follow-up e tire dúvidas sobre planos."

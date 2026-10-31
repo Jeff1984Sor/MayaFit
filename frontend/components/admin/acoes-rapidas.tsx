@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/mayacorp/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { copiarTexto, fichaDe, somarDias } from "@/lib/admin";
+import { copiarTexto } from "@/lib/admin";
 import { api } from "@/lib/api";
 import { data } from "@/lib/format";
 import { type Estudio, ROTULO_STATUS, type StatusEstudio } from "@/lib/tipos-admin";
@@ -17,14 +17,20 @@ export function useAcoesEstudio(e: Estudio) {
   const qc = useQueryClient();
   const atualizar = () => qc.invalidateQueries({ queryKey: ["admin"] });
   const estender = useMutation({
-    mutationFn: (dias: number) => api.put<Estudio>(`/admin/clientes/${e.id}`, { ...fichaDe(e), teste_ate: somarDias(e.teste_ate, dias) }),
+    mutationFn: (dias: number) => api.post<Estudio>(`/admin/clientes/${e.id}/estender-teste`, { dias }),
     onSuccess: (r) => {
       toast.success(`Teste de ${r.nome} vai até ${data(r.teste_ate)}`);
       atualizar();
     },
   });
   const status = useMutation({
-    mutationFn: (s: StatusEstudio) => api.post<Estudio>(`/admin/clientes/${e.id}/status`, { status: s }),
+    // suspender/reativar têm rota própria (validam o caso e registram na linha do tempo)
+    mutationFn: (s: StatusEstudio) =>
+      s === "suspenso"
+        ? api.post<Estudio>(`/admin/clientes/${e.id}/suspender`, {})
+        : s === "ativo"
+          ? api.post<Estudio>(`/admin/clientes/${e.id}/reativar`, {})
+          : api.post<Estudio>(`/admin/clientes/${e.id}/status`, { status: s }),
     onSuccess: (r) => {
       toast.success(`${r.nome}: ${ROTULO_STATUS[r.status]}`);
       atualizar();

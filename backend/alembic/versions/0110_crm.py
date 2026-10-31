@@ -1,7 +1,7 @@
 """CRM de vendas: etapas do funil, motivos de perda, leads, interacoes, tarefas e historico de etapas.
 
 Revision ID: 0110_crm
-Revises: 0001_pilates_inicial
+Revises: 0002_usuario_suporte
 """
 
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ from alembic import op
 import app.core.db  # noqa: F401  (UtcDateTime)
 
 revision = "0110_crm"
-down_revision = "0001_pilates_inicial"
+down_revision = "0002_usuario_suporte"
 branch_labels = None
 depends_on = None
 

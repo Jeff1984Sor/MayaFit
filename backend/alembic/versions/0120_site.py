@@ -1,7 +1,7 @@
 """Site grátis do estúdio: configuração (rascunho/publicado) e contatos recebidos.
 
 Revision ID: 0120_site
-Revises: 0001_pilates_inicial
+Revises: 0110_crm
 """
 
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ from alembic import op
 import app.core.db
 
 revision = "0120_site"
-down_revision = "0001_pilates_inicial"
+down_revision = "0110_crm"
 branch_labels = None
 depends_on = None
 

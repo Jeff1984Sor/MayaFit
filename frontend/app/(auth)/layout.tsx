@@ -3,7 +3,7 @@
 import { CalendarDays, ChartLine, ShieldCheck, Users } from "lucide-react";
 import { motion } from "motion/react";
 
-import { MarcaLogo, VersaoRodape } from "@/components/mayacorp/brand";
+import { MarcaLogo, MayaCorpAssinatura } from "@/components/mayacorp/brand";
 import { FaixaAmbiente } from "@/components/mayacorp/shell";
 
 const DESTAQUES = [
@@ -77,7 +77,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="w-full max-w-sm">{children}</div>
         </div>
         <footer className="relative flex justify-center pb-6 text-muted-foreground">
-          <VersaoRodape />
+          <MayaCorpAssinatura />
         </footer>
       </main>
     </div>

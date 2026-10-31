@@ -66,7 +66,7 @@ export function CommandPalette() {
 
   // Busca de alunos (nome, CPF ou telefone) a partir de 2 letras; outros registros entram com cada módulo.
   const termo = useDebounce(q.trim(), 250);
-  const podeBuscarAluno = pode("alunos.ver");
+  const podeBuscarAluno = pode("alunos.ver") && !usuario?.estudio?.mayacorp;
   const { data: alunos = [] } = useQuery({
     queryKey: ["paleta-alunos", termo],
     queryFn: () => api.get<AlunoBusca[]>("/alunos/busca", { q: termo }),
@@ -99,7 +99,7 @@ export function CommandPalette() {
             </CommandGroup>
           )}
           {!ativo &&
-            navPara(usuario && pode).map((g) => (
+            navPara(usuario && pode, { mayacorp: !!usuario?.estudio?.mayacorp }).map((g) => (
               <CommandGroup key={g.titulo} heading={g.titulo}>
                 {g.itens
                   .filter((i) => !i.planejado)

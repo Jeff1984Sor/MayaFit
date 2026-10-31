@@ -136,7 +136,12 @@
   vira cookies); `lib/types.ts` ganhou `UsuarioMe.estudio?` e `EstudioInfo`.
 - **Fora da minha área, por necessidade de tenancy** (registrado): `app/modules/app_aluno/servico.py` (token do aluno
   com `est`, checagem na decodificação, refresh define o estúdio pelo token) e `tests/test_cobertura_rotas.py` (as duas
-  rotas públicas novas na lista esperada e na de rate limit).
+  rotas públicas novas na lista esperada e na de rate limit) e `tests/dados/test_migracao.py` (aplica também as migrations
+  depois da 0001, senão a coluna `usuario.suporte` da 0002 não bate com os modelos).
+- Suíte completa: verde, exceto dois testes de data fixa que não dependem desta entrega:
+  `tests/app_aluno/test_aulas_reposicao.py::test_lista_so_as_proprias_aulas_futuras_sem_canceladas` (já falhava) e
+  `tests/financeiro/test_receita_saude.py::test_arquivo_por_aluno_formato_16_colunas_crlf_e_marca_gerado` (espera o
+  nome do arquivo com a data 20261025; falha em qualquer outro dia).
 
 ### Campo `estudio` do `/api/auth/me` (e do `usuario` do login/refresh)
 

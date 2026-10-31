@@ -13,18 +13,27 @@ from app.controle.models import Plano
 # chave → rótulo exibido no admin e no "Meu plano"
 RECURSOS: dict[str, str] = {
     "gestao": "Agenda, alunos, contratos e financeiro",
+    "site": "Site do estúdio (grátis)",
+    "crm": "CRM de vendas (funil de leads e aula experimental)",
     "app_aluno": "App do aluno",
     "whatsapp": "Avisos por WhatsApp",
+    "checkin": "Check-in por reconhecimento facial",
+    "integracoes": "Integrações (TotalPass, Wellhub, API)",
     "ia": "Assistente de IA",
-    "integracoes": "Integrações (TotalPass, API)",
+    "nfse": "Nota fiscal de serviço (NFS-e)",
+    "catraca": "Integração com catraca",
 }
 
 # módulos extras, liberados estúdio a estúdio na ficha do admin (Estúdios › Ficha › Extras liberados)
 EXTRAS: dict[str, str] = {
     "receita_saude": "Recibos Receita Saúde",
     "etl": "Migração de dados do sistema antigo",
+    "catraca": "Integração com catraca (avulsa, para quem não tem o plano Rede)",
 }
 
+ESSENCIAL = ["gestao", "site", "crm"]
+ESTUDIO = [*ESSENCIAL, "app_aluno", "whatsapp", "checkin", "integracoes"]
+PRO = [*ESTUDIO, "ia", "nfse"]
 TODOS = list(RECURSOS)
 
 # teste grátis padrão de um estúdio novo (pelo admin e pela aprovação do cadastro do site): 2 meses
@@ -35,9 +44,9 @@ PRECO_USUARIO_ADICIONAL = Decimal("14.90")  # por usuário acima do limite do pl
 
 PADRAO = [
     # nome, mensal, anual, usuários, alunos ativos (None = ilimitado), recursos
-    ("Essencial", "49.90", "499.00", 2, 60, ["gestao"]),
-    ("Estúdio", "89.90", "899.00", 5, 150, ["gestao", "app_aluno", "whatsapp"]),
-    ("Pro", "149.90", "1499.00", 10, 350, TODOS),
+    ("Essencial", "49.90", "499.00", 2, 60, ESSENCIAL),
+    ("Estúdio", "89.90", "899.00", 5, 150, ESTUDIO),
+    ("Pro", "149.90", "1499.00", 10, 350, PRO),
     ("Rede", "289.90", "2899.00", 25, None, TODOS),
 ]
 

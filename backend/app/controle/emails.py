@@ -61,5 +61,5 @@ def enviar_email(para: list[str], assunto: str, corpo: str,
                 extras["imagens"] = imagens
         ok = mail.enviar(para, assunto, corpo, **extras)
     if not ok:
-        log.warning("E-mail '%s' não foi enviado (SMTP do admin MayaCorp)", assunto)
+        log.warning("E-mail '%s' não foi enviado (SMTP do admin MayaFit)", assunto)
     return ok

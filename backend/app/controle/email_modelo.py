@@ -87,6 +87,6 @@ def corpo_html(corpo: str, *, titulo: str, marca: str = "MayaFit", logo_cid: str
 <tr><td style="background:{NAVY};background-image:linear-gradient(135deg,{DARK} 0%,{NAVY} 70%,{INDIGO} 140%);padding:24px 32px">{cabeca}</td></tr>
 <tr><td style="padding:28px 32px 12px;color:{DARK};font-size:15px;line-height:1.6">{"".join(partes)}</td></tr>
 <tr><td style="padding:18px 32px 26px;border-top:1px solid #eceef5;color:#8a90a6;font-size:12px;line-height:1.5">
-MayaFit é um produto <b style="color:{NAVY}">MayaCorp</b> · gestão de estúdios: agenda, alunos, contratos e financeiro<br>
+<b style="color:{NAVY}">MayaFit</b> · gestão de estúdios: agenda, alunos, contratos e financeiro<br>
 Responda este e-mail se precisar de ajuda.</td></tr>
 </table></td></tr></table></body></html>"""

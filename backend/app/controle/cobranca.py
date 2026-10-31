@@ -20,7 +20,7 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
-from app.controle import indicacao, ponte
+from app.controle import eventos, indicacao, ponte
 from app.controle.mercadopago import FORMAS, ErroMercadoPago, MercadoPago
 from app.controle.models import Cliente, Cobranca, ConfigCobranca, SessaoControle
 from app.core.db import agora
@@ -203,6 +203,7 @@ def gerar_mensalidade(db, c: Cliente, ano: int, mes: int, hoje: date | None = No
                    avisos=[])
     db.add(cob)
     db.flush()
+    eventos.registrar(db, c.id, "cobranca", f"Mensalidade {mes:02d}/{ano} gerada: {moeda(valor)}")
     return cob
 
 
@@ -223,6 +224,7 @@ def primeira_cobranca(db, c: Cliente, hoje: date | None = None) -> Cobranca | No
                    itens=itens, valor=valor, vencimento=venc, status="pendente", avisos=[])
     db.add(cob)
     db.flush()
+    eventos.registrar(db, c.id, "cobranca", f"1ª mensalidade gerada: {moeda(valor)}, vence em {venc:%d/%m/%Y}")
     return cob
 
 
@@ -288,10 +290,12 @@ def _reativar_se_quitou(db, c: Cliente, hoje: date | None = None) -> None:
                                                    Cobranca.vencimento < hoje))
     if not vencidas:
         c.status = "ativo"
+        eventos.mudou_status(db, c.id, "suspenso", "ativo", motivo="pagamento em dia")
         ponte.limpar_cache()
 
 
-def dar_baixa(cob: Cobranca, forma: str, pagamento_id: str | None = None, quando: datetime | None = None) -> bool:
+def dar_baixa(cob: Cobranca, forma: str, pagamento_id: str | None = None, quando: datetime | None = None,
+              usuario: str | None = None) -> bool:
     if cob.status == "paga":
         return False
     cob.status = "paga"
@@ -302,6 +306,8 @@ def dar_baixa(cob: Cobranca, forma: str, pagamento_id: str | None = None, quando
 
     db = object_session(cob)
     if db is not None and cob.cliente is not None:
+        eventos.registrar(db, cob.cliente_id, "pagamento", f"{cob.descricao} paga ({forma}): {moeda(cob.valor)}",
+                          usuario=usuario)
         _reativar_se_quitou(db, cob.cliente)
     return True
 
@@ -395,7 +401,7 @@ def enviar_cobranca(db, cob: Cobranca, passo: int | None = None) -> list[str]:
                     "desconsidere este aviso.")
     corpo = (f"Olá, {c.responsavel or c.nome}.\n\n{abertura}\n\n{_texto_itens(cob)}\n\nTotal: {moeda(cob.valor)}\n\n"
              f"Pague por Pix, cartão ou boleto neste link:\n{link}\n\nQualquer dúvida, é só responder este e-mail.\n\n"
-             "MayaCorp")
+             "Equipe MayaFit")
     enviar_email(para, assunto, corpo)
     return para
 
@@ -407,7 +413,7 @@ def _avisar_pagamento(cob: Cobranca) -> None:
     try:
         enviar_email([c.email_financeiro], f"{MARCA} — pagamento recebido ({cob.descricao})",
                      f"Olá, {c.responsavel or c.nome}.\n\nRecebemos o pagamento de {moeda(cob.valor)} "
-                     f"({cob.descricao}). Obrigado!\n\nMayaCorp")
+                     f"({cob.descricao}). Obrigado!\n\nEquipe MayaFit")
     except Exception:
         log.exception("Aviso de pagamento da cobrança %s falhou", cob.id)
 
@@ -429,6 +435,7 @@ def encerrar_testes(hoje: date | None = None) -> dict:
                 continue
             try:
                 c.status = "ativo"
+                eventos.mudou_status(db, c.id, "teste", "ativo", motivo=f"teste acabou em {c.teste_ate:%d/%m/%Y}")
                 cob = primeira_cobranca(db, c, hoje)
                 db.commit()
                 feitos["encerrados"] += 1
@@ -457,6 +464,8 @@ def suspender_atrasados(hoje: date | None = None) -> list[str]:
             if not atrasada:
                 continue
             c.status = "suspenso"
+            eventos.mudou_status(db, c.id, "ativo", "suspenso",
+                                 motivo=f"{atrasada.descricao} vencida em {atrasada.vencimento:%d/%m/%Y}")
             db.commit()
             suspensos.append(c.slug)
             if c.email_financeiro:
@@ -467,7 +476,7 @@ def suspender_atrasados(hoje: date | None = None) -> list[str]:
                                  "aberto. O sistema continua funcionando, mas a equipe passa a ver um aviso. Assim que "
                                  "o pagamento for identificado, o aviso some sozinho."
                                  + (f"\n\nPague por Pix, cartão ou boleto neste link:\n{atrasada.link}" if atrasada.link
-                                    else "") + "\n\nMayaCorp")
+                                    else "") + "\n\nEquipe MayaFit")
                 except Exception:
                     log.exception("Aviso de suspensão de %s falhou", c.slug)
     if suspensos:

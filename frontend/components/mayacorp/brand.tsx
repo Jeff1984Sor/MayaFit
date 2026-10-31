@@ -60,16 +60,20 @@ function useVersao() {
   return data && data !== "dev" ? data : VERSAO;
 }
 
-export function VersaoRodape({ className }: { className?: string }) {
+/** Assinatura do produto: "MayaFit · uma solução MayaCorp" + versão no ar. */
+export function MayaCorpAssinatura({ className, versao = true }: { className?: string; versao?: boolean }) {
   const numero = useVersao();
   return (
     <p className={cn("flex items-center gap-1.5 text-xs", className)}>
       <span className="inline-block size-1.5 rounded-full bg-brand" />
-      Sistema do estúdio
-      <span className="rounded bg-current/10 px-1.5 py-px font-mono text-[10px] opacity-80">{numero}</span>
+      <span className="font-semibold tracking-tight">MayaFit</span> · uma solução MayaCorp
+      {versao && <span className="rounded bg-current/10 px-1.5 py-px font-mono text-[10px] opacity-80">{numero}</span>}
     </p>
   );
 }
+
+/** Nome antigo, mantido para não quebrar quem importa. */
+export const VersaoRodape = MayaCorpAssinatura;
 
 export function Mono({ children, className }: { children: React.ReactNode; className?: string }) {
   return <span className={cn("num text-[0.92em]", className)}>{children}</span>;

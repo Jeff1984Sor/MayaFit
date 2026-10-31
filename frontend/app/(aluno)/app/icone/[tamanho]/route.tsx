@@ -14,7 +14,7 @@ function iniciais(nome: string) {
 
 async function marca() {
   let nome = "MayaFit";
-  let cor = "#b0486b";
+  let cor = "#7c8fff";
   let logo: string | null = null;
   try {
     const r = await fetch(`${API}/public/identidade`, { cache: "no-store", signal: AbortSignal.timeout(4000) });

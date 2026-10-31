@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Moon, Sun, UserRound } from "lucide-react";
+import { CircleUserRound, Compass, Gem, Moon, Sun, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -22,6 +22,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 import { navPara } from "./nav";
+import { iniciarTour } from "./tour";
 
 const EVENTO = "maya:paleta";
 export const abrirPaleta = () => window.dispatchEvent(new Event(EVENTO));
@@ -37,7 +38,7 @@ interface AlunoBusca {
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
-    const router = useRouter();
+  const router = useRouter();
   const { usuario, pode } = useAuth();
   const { setTheme, resolvedTheme } = useTheme();
 
@@ -66,7 +67,7 @@ export function CommandPalette() {
 
   // Busca de alunos (nome, CPF ou telefone) a partir de 2 letras; outros registros entram com cada módulo.
   const termo = useDebounce(q.trim(), 250);
-  const podeBuscarAluno = pode("alunos.ver");
+  const podeBuscarAluno = pode("alunos.ver") && !usuario?.estudio?.mayacorp;
   const { data: alunos = [] } = useQuery({
     queryKey: ["paleta-alunos", termo],
     queryFn: () => api.get<AlunoBusca[]>("/alunos/busca", { q: termo }),
@@ -82,9 +83,9 @@ export function CommandPalette() {
   };
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen} title="Busca rápida" description="Navegue pelas telas do sistema">
+    <CommandDialog open={open} onOpenChange={setOpen} title="Busca rápida" description="Busque alunos ou vá para qualquer tela do sistema">
       <Command shouldFilter={!ativo}>
-        <CommandInput placeholder="Digite para navegar…" value={q} onValueChange={setQ} />
+        <CommandInput placeholder={podeBuscarAluno ? "Busque um aluno ou digite o nome de uma tela…" : "Digite o nome de uma tela…"} value={q} onValueChange={setQ} />
         <CommandList className="max-h-[420px]">
           <CommandEmpty>Nada encontrado.</CommandEmpty>
           {alunos.length > 0 && (
@@ -99,7 +100,7 @@ export function CommandPalette() {
             </CommandGroup>
           )}
           {!ativo &&
-            navPara(usuario && pode).map((g) => (
+            navPara(usuario && pode, { mayacorp: !!usuario?.estudio?.mayacorp, recursos: usuario?.estudio?.recursos }).map((g) => (
               <CommandGroup key={g.titulo} heading={g.titulo}>
                 {g.itens
                   .filter((i) => !i.planejado)
@@ -115,6 +116,28 @@ export function CommandPalette() {
           {!ativo && (
             <>
               <CommandSeparator />
+              <CommandGroup heading="Atalhos">
+                <CommandItem value="minha conta perfil foto senha" onSelect={() => ir("/minha-conta")}>
+                  <CircleUserRound />
+                  Minha conta
+                </CommandItem>
+                {usuario?.administrador && usuario.estudio && !usuario.estudio.mayacorp && (
+                  <CommandItem value="meu plano assinatura mensalidade" onSelect={() => ir("/minha-conta/plano")}>
+                    <Gem />
+                    Meu plano
+                  </CommandItem>
+                )}
+                <CommandItem
+                  value="tour guiado ajuda conhecer o sistema"
+                  onSelect={() => {
+                    setOpen(false);
+                    iniciarTour();
+                  }}
+                >
+                  <Compass />
+                  Tour guiado
+                </CommandItem>
+              </CommandGroup>
               <CommandGroup heading="Preferências">
                 <CommandItem
                   value="alternar tema escuro claro"

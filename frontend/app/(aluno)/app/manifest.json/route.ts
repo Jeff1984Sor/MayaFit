@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   let nome = "MayaFit";
-  let cor = "#b0486b";
+  let cor = "#7c8fff";
   try {
     const r = await fetch(`${API}/public/identidade`, { cache: "no-store", signal: AbortSignal.timeout(4000) });
     if (r.ok) {

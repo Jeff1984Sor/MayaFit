@@ -5,6 +5,7 @@ import {
   BarChart3,
   Building2,
   CalendarCheck,
+  CircleUserRound,
   CalendarClock,
   CalendarDays,
   ClipboardList,
@@ -35,6 +36,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { NAV_ADMIN } from "./nav-admin";
+
 export interface NavItem {
   label: string;
   href: string;
@@ -43,6 +46,10 @@ export interface NavItem {
   permissao?: string;
   /** Área planejada: aparece no menu, mas ainda não tem tela (não clicável). */
   planejado?: boolean;
+  /** Recurso do plano exigido (ex.: "crm", "nfse", "wellhub"); some se o estúdio não tiver. Sem estúdio, aparece. */
+  recurso?: string;
+  /** Selo "novo" ao lado do nome (módulo recém-lançado). */
+  novo?: boolean;
   atalho?: string;
   exato?: boolean;
 }
@@ -127,22 +134,67 @@ export const NAV: NavGrupo[] = [
   },
 ];
 
-export function navPara(pode: ((permissao: string) => boolean) | undefined): NavGrupo[] {
+/** Grupo "Conta" do admin MayaCorp (no estúdio, Minha conta fica no menu do usuário). */
+const NAV_CONTA: NavGrupo = {
+  titulo: "Conta",
+  itens: [{ label: "Minha conta", href: "/minha-conta", icone: CircleUserRound }],
+};
+
+/**
+ * O estúdio tem o recurso? `recursos` vem de /auth/me (estudio.recursos): lista de chaves ou mapa chave → ligado.
+ * Sem informação (modo um banco só, ou backend antigo) tudo fica liberado.
+ */
+export function temRecurso(recursos: unknown, chave: string): boolean {
+  if (recursos == null) return true;
+  if (Array.isArray(recursos)) return recursos.includes(chave);
+  if (typeof recursos === "object") {
+    const v = (recursos as Record<string, unknown>)[chave];
+    return v === undefined ? true : !!v;
+  }
+  return true;
+}
+
+export interface OpcoesNav {
+  /** Admin MayaCorp (`usuario.estudio.mayacorp`): só a seção Admin MayaFit + Configurações + Auditoria + Minha conta. */
+  mayacorp?: boolean;
+  /** `usuario.estudio.recursos`: filtra os itens com `recurso`. */
+  recursos?: unknown;
+}
+
+/** Grupos que a pessoa vê. Sem `opcoes` (modo um banco só) o menu é o de sempre. */
+export function navPara(pode: ((permissao: string) => boolean) | undefined, opcoes: OpcoesNav = {}): NavGrupo[] {
   if (!pode) return [];
-  return NAV.map((g) => ({
-    ...g,
-    itens: g.itens.filter((i) => !i.permissao || pode(i.permissao)),
-  })).filter((g) => g.itens.length > 0);
+  const base = opcoes.mayacorp ? [NAV_ADMIN, ...NAV.filter((g) => g.titulo === "Configurações"), NAV_CONTA] : NAV;
+  return base
+    .map((g) => ({
+      ...g,
+      itens: g.itens.filter((i) => (!i.permissao || pode(i.permissao)) && (!i.recurso || temRecurso(opcoes.recursos, i.recurso))),
+    }))
+    .filter((g) => g.itens.length > 0);
 }
 
 /** Item do menu que cobre o endereço (o mais específico), para o bloqueio de página. */
 export function itemDaRota(pathname: string): NavItem | undefined {
   let melhor: NavItem | undefined;
-  for (const g of NAV)
+  for (const g of [...NAV, NAV_ADMIN])
     for (const i of g.itens)
       if (!i.planejado && i.href !== "/" && (pathname === i.href || pathname.startsWith(`${i.href}/`)))
         if (!melhor || i.href.length > melhor.href.length) melhor = i;
   return melhor;
+}
+
+/**
+ * A rota pertence à outra "casa"? Módulos do estúdio somem no admin MayaCorp e a seção MayaCorp só existe lá.
+ * Bloqueio leve de tela: o servidor já recusa os dados.
+ */
+export function rotaForaDaCasa(pathname: string, mayacorp: boolean): boolean {
+  const rota = itemDaRota(pathname);
+  if (!rota) return false;
+  const doAdmin = NAV_ADMIN.itens.includes(rota);
+  if (!mayacorp) return doAdmin;
+  if (doAdmin) return false;
+  const config = NAV.find((g) => g.titulo === "Configurações");
+  return !config?.itens.includes(rota);
 }
 
 export function ativo(pathname: string, item: NavItem) {

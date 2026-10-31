@@ -1,9 +1,14 @@
 "use client";
 
 import {
+  ArrowRight,
   ChevronsLeft,
   CircleUserRound,
+  Clock3,
+  Compass,
+  Gem,
   KeyRound,
+  TriangleAlert,
   LogOut,
   Menu,
   Monitor,
@@ -37,11 +42,12 @@ import { EH_HML } from "@/lib/env";
 import type { UsuarioMe } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-import { ClientLogo, VersaoRodape } from "./brand";
+import { ClientLogo, MayaCorpAssinatura } from "./brand";
 import { CommandPalette, abrirPaleta } from "./command-palette";
 import { TrocarSenhaDialog } from "./trocar-senha-dialog";
 import { UserAvatar } from "./user-avatar";
-import { ativo, itemDaRota, navPara, type NavItem } from "./nav";
+import { ativo, itemDaRota, navPara, rotaForaDaCasa, type NavItem } from "./nav";
+import { iniciarTour, TourGuiado } from "./tour";
 import { SemAcesso } from "./sem-acesso";
 
 const nomePerfil = (u: { perfil_acesso_nome: string | null }) => u.perfil_acesso_nome ?? "Sem perfil";
@@ -79,6 +85,36 @@ export function FaixaAmbiente() {
   );
 }
 
+const ddmm = (iso: string) => {
+  const [, m, d] = iso.slice(0, 10).split("-");
+  return d && m ? `${d}/${m}` : iso;
+};
+
+/** Faixa discreta de situação do estúdio (multi-estúdio): período de teste ou pendência no plano. */
+export function FaixaEstudio() {
+  const { usuario } = useAuth();
+  const est = usuario?.estudio;
+  if (!est || est.mayacorp) return null;
+  if (est.status === "suspenso")
+    return (
+      <div role="status" className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-b border-warning/30 bg-warning/12 px-4 py-1.5 text-center text-xs font-medium text-warning-ink no-print">
+        <TriangleAlert className="size-3.5 shrink-0" />
+        <span>Há uma pendência no seu plano.</span>
+        <Link href="/minha-conta/plano" className="inline-flex items-center gap-1 font-semibold underline-offset-2 hover:underline">
+          Ver meu plano <ArrowRight className="size-3" />
+        </Link>
+      </div>
+    );
+  if (est.status === "teste")
+    return (
+      <div role="status" className="flex items-center justify-center gap-2 border-b border-brand/20 bg-brand/8 px-4 py-1.5 text-center text-xs font-medium text-info-ink no-print">
+        <Clock3 className="size-3.5 shrink-0" />
+        <span>{est.teste_ate ? `Período de teste até ${ddmm(est.teste_ate)}` : "Período de teste"}</span>
+      </div>
+    );
+  return null;
+}
+
 function ItemNav({ item, recolhido, onNavigate }: { item: NavItem; recolhido: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
   const on = ativo(pathname, item);
@@ -102,6 +138,14 @@ function ItemNav({ item, recolhido, onNavigate }: { item: NavItem; recolhido: bo
       {!recolhido && (
         <span className="relative flex-1 truncate">{item.label}</span>
       )}
+      {!recolhido && item.novo && !item.planejado && (
+        <span className="relative rounded-md bg-brand/20 px-1.5 py-0.5 text-[10px] font-semibold text-white uppercase ring-1 ring-brand/40">
+          novo
+        </span>
+      )}
+      {recolhido && item.novo && !item.planejado && (
+        <span className="absolute top-1 right-2 size-2 rounded-full bg-brand ring-2 ring-sidebar" aria-hidden />
+      )}
       {!recolhido && item.planejado && (
         <span className="relative rounded-md bg-white/8 px-1.5 py-0.5 text-[10px] font-semibold text-sidebar-foreground/70 uppercase">
           em breve
@@ -118,7 +162,7 @@ function ItemNav({ item, recolhido, onNavigate }: { item: NavItem; recolhido: bo
   const el = item.planejado ? (
     <span className={classe}>{conteudo}</span>
   ) : (
-    <Link href={item.href} className={classe} onClick={onNavigate}>
+    <Link href={item.href} className={classe} onClick={onNavigate} data-tour={`nav:${item.href}`} aria-current={on ? "page" : undefined}>
       {conteudo}
     </Link>
   );
@@ -158,7 +202,8 @@ function SidebarConteudo({ recolhido, onNavigate, onRecolher }: { recolhido: boo
   const { usuario, pode } = useAuth();
   const { nome_exibicao } = useBrand();
   const pathname = usePathname();
-  const grupos = navPara(usuario && pode);
+  const mayacorp = !!usuario?.estudio?.mayacorp;
+  const grupos = navPara(usuario && pode, { mayacorp, recursos: usuario?.estudio?.recursos });
   const { fechados, alternar } = useGruposRecolhidos();
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-sidebar text-sidebar-foreground">
@@ -176,7 +221,7 @@ function SidebarConteudo({ recolhido, onNavigate, onRecolher }: { recolhido: boo
         {!recolhido && (
           <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate text-sm font-semibold text-white">{nome_exibicao}</p>
-            <p className="text-[11px] text-sidebar-foreground/60">Gestão do estúdio</p>
+            <p className="text-[11px] text-sidebar-foreground/60">{mayacorp ? "Admin MayaFit" : "Gestão do estúdio"}</p>
           </div>
         )}
         {onRecolher && !recolhido && (
@@ -190,7 +235,7 @@ function SidebarConteudo({ recolhido, onNavigate, onRecolher }: { recolhido: boo
         )}
       </div>
 
-      <nav className="relative flex-1 space-y-5 overflow-x-hidden overflow-y-auto px-2 py-4 [scrollbar-width:thin]">
+      <nav data-tour="menu" aria-label="Menu principal" className="relative flex-1 space-y-5 overflow-x-hidden overflow-y-auto px-2 py-4 [scrollbar-width:thin]">
         {grupos.map((g) => {
           const fechado = !recolhido && fechados.has(g.titulo);
           // grupo recolhido ainda mostra a tela em que a pessoa está
@@ -248,7 +293,7 @@ function SidebarConteudo({ recolhido, onNavigate, onRecolher }: { recolhido: boo
             <ChevronsLeft className="size-4 rotate-180" />
           </button>
         ) : (
-          <VersaoRodape className="justify-center text-sidebar-foreground/55" />
+          <MayaCorpAssinatura className="justify-center text-sidebar-foreground/55" />
         )}
       </div>
     </div>
@@ -303,10 +348,11 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
 
       <button
         onClick={abrirPaleta}
+        data-tour="busca"
         className="group flex h-9 w-full max-w-md items-center gap-2 rounded-lg border bg-background/60 px-3 text-sm text-muted-foreground transition hover:border-brand/40 hover:bg-background"
       >
         <Search className="size-4" />
-        <span className="flex-1 truncate text-left">Ir para… (menu e telas)</span>
+        <span className="flex-1 truncate text-left">Buscar alunos e telas…</span>
         <kbd className="hidden rounded border bg-muted px-1.5 font-mono text-[10px] sm:inline">{mac ? "⌘" : "Ctrl"} K</kbd>
       </button>
 
@@ -318,7 +364,7 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <button className="flex items-center gap-2 rounded-lg py-1 pr-2 pl-1 transition hover:bg-muted" />
+            <button data-tour="usuario" aria-label="Menu do usuário" className="flex items-center gap-2 rounded-lg py-1 pr-2 pl-1 transition hover:bg-muted" />
           }
         >
           <UserAvatar nome={usuario?.nome ?? "?"} fotoUrl={usuario?.foto_url} className="size-8 ring-2 ring-brand/30" textoClassName="text-xs" />
@@ -349,8 +395,16 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
           <DropdownMenuItem onClick={() => router.push("/minha-conta")}>
             <CircleUserRound /> Minha conta
           </DropdownMenuItem>
+          {usuario?.administrador && usuario.estudio && !usuario.estudio.mayacorp && (
+            <DropdownMenuItem onClick={() => router.push("/minha-conta/plano")}>
+              <Gem /> Meu plano
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => setTrocarSenha(true)}>
             <KeyRound /> Trocar senha
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={iniciarTour}>
+            <Compass /> Tour guiado
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => void sair()} variant="destructive">
@@ -367,10 +421,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [recolhido, alternar] = useRecolhido();
   const [gaveta, setGaveta] = useState(false);
   const pathname = usePathname();
-  const { pode } = useAuth();
+  const router = useRouter();
+  const { pode, usuario } = useAuth();
+  const mayacorp = !!usuario?.estudio?.mayacorp;
   // bloqueio leve por página: o servidor já recusa os dados, aqui só trocamos a tela por um aviso amigável
   const rota = itemDaRota(pathname);
-  const bloqueada = !!rota && !!rota.permissao && !pode(rota.permissao);
+  const bloqueada = (!!rota && !!rota.permissao && !pode(rota.permissao)) || (!!usuario && rotaForaDaCasa(pathname, mayacorp));
+  // o admin MayaCorp não tem painel do estúdio: a tela inicial dele é /admin
+  useEffect(() => {
+    if (mayacorp && pathname === "/dashboard") router.replace("/admin");
+  }, [mayacorp, pathname, router]);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- fecha a gaveta ao navegar
   useEffect(() => setGaveta(false), [pathname]);
 
@@ -409,8 +469,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <CommandPalette />
 
       <main className="min-h-dvh pt-[calc(var(--tb)+var(--faixa))] transition-[padding] duration-200 lg:pl-(--sb)">
+        <FaixaEstudio />
         <div className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{bloqueada ? <SemAcesso /> : children}</div>
       </main>
+      <TourGuiado />
     </>
   );
 }

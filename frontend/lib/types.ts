@@ -18,12 +18,27 @@ export interface UsuarioMe {
   login: string | null;
   telefone: string | null;
   foto_url: string | null;
-  preferencias: Record<string, unknown> & { menu_recolhido?: string[] };
+  preferencias: Record<string, unknown> & { menu_recolhido?: string[]; tour_visto?: boolean };
   perfil_acesso_id: number | null;
   perfil_acesso_nome: string | null;
   administrador: boolean;
   somente_proprias_aulas: boolean;
   permissoes: string[];
+  /** Estúdio da sessão (modo multi-estúdio). Ausente/null no modo de um banco só. */
+  estudio?: EstudioMe | null;
+}
+
+export type StatusEstudio = "teste" | "ativo" | "suspenso" | "inativo";
+
+export interface EstudioMe {
+  slug: string;
+  nome: string;
+  /** Admin MayaCorp: o menu mostra só a seção MayaCorp + Configurações. */
+  mayacorp: boolean;
+  status: StatusEstudio;
+  /** Fim do período de teste (YYYY-MM-DD). */
+  teste_ate: string | null;
+  recursos?: unknown;
 }
 
 export interface IdentidadePublica {

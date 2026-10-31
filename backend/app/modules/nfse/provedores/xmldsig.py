@@ -9,7 +9,8 @@ resultado correto. O cálculo é explícito e curto:
 2. SignatureValue = RSA-SHA256 (PKCS#1 v1.5) do C14N do `SignedInfo` já posicionado no documento;
 3. KeyInfo/X509Data/X509Certificate com o certificado do estúdio.
 
-Os testes conferem a assinatura com o verificador independente do signxml.
+Os testes (tests/nfse/test_xml.py) recalculam digest e RSA de forma independente e comparam o C14N com um texto
+canônico escrito à mão.
 """
 
 from __future__ import annotations

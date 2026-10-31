@@ -10,6 +10,7 @@ Professor não tem nenhuma (perfil padrão sem financeiro).
 from __future__ import annotations
 
 from datetime import date
+from decimal import Decimal
 
 from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import Response
@@ -40,6 +41,17 @@ adicionar_regras([
 ])
 
 
+def _decimais_como_texto(obj):
+    """Dinheiro sai como texto ("300.00"), igual aos endpoints com response_model (nunca float)."""
+    if isinstance(obj, Decimal):
+        return f"{obj:.2f}"
+    if isinstance(obj, dict):
+        return {k: _decimais_como_texto(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_decimais_como_texto(v) for v in obj]
+    return obj
+
+
 def _nota(ctx: Ctx, nota_id: int) -> NotaFiscal:
     n = ctx.db.get(NotaFiscal, nota_id)
     if n is None:
@@ -50,7 +62,7 @@ def _nota(ctx: Ctx, nota_id: int) -> NotaFiscal:
 # ================================================================================================ painel e lista
 @router.get("/painel")
 def painel(ctx: Ctx):
-    return servico.painel(ctx.db)
+    return _decimais_como_texto(servico.painel(ctx.db))
 
 
 @router.get("/notas", response_model=sc.ListaNotas)
@@ -99,7 +111,7 @@ def analisar(dados: sc.RaioXIn, ctx: Ctx):
         raise HTTPException(422, "Informe a nota avulsa ou os recebimentos.")
     resultado = raio_x.analisar(ctx.db, rascunhos)
     ctx.db.rollback()  # o raio-x não grava nada (nem a configuração padrão)
-    return resultado
+    return _decimais_como_texto(resultado)
 
 
 @router.post("/notas", response_model=sc.NotaDetalhe, status_code=201)

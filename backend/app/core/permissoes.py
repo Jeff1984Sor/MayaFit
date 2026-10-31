@@ -23,6 +23,9 @@ ROTULO_ACAO = {
     "enviar": "Enviar mensagens",
     "configurar": "Configurar",
     "usar": "Usar",
+    "emitir": "Emitir",
+    "cancelar": "Cancelar",
+    "liberar_manual": "Liberar a catraca manualmente",
 }
 
 # Ids de recurso sem ponto (o ponto separa recurso e ação). "financeiro_receber" = financeiro.receber do planejamento.

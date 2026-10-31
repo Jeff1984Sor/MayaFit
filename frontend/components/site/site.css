@@ -1,0 +1,281 @@
+/*
+ * Site do estúdio: tokens dos 3 temas e animações. Tudo escopado em `.site` (não vaza para o sistema).
+ * A cor da marca chega em --s-marca (Identidade do estúdio); o layout usa container queries (@container),
+ * por isso a prévia do editor em largura de celular mostra o layout de celular de verdade.
+ * Animações só com CSS (scroll-driven quando o navegador suporta) e desligadas com prefers-reduced-motion.
+ */
+.site {
+  container-type: inline-size;
+  --s-marca: #7c8fff;
+  --s-marca-txt: #ffffff;
+  --s-fundo: #fbfaff;
+  --s-fundo-alt: color-mix(in oklab, var(--s-marca) 6%, #ffffff);
+  --s-texto: #141827;
+  --s-suave: color-mix(in oklab, var(--s-texto) 62%, var(--s-fundo));
+  --s-borda: color-mix(in oklab, var(--s-texto) 10%, var(--s-fundo));
+  --s-card: #ffffff;
+  --s-raio: 1.5rem;
+  --s-raio-sm: 0.9rem;
+  --s-fonte-titulo: var(--font-fraunces), Georgia, serif;
+  --s-titulo-peso: 600;
+  --s-titulo-caixa: none;
+  --s-titulo-espaco: -0.02em;
+  --s-sombra: 0 1px 2px rgb(20 24 39 / 0.04), 0 12px 32px -12px color-mix(in oklab, var(--s-marca) 28%, transparent);
+  background: var(--s-fundo);
+  color: var(--s-texto);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+.site[data-tema="zen"] {
+  --s-fundo: #f6f1ea;
+  --s-fundo-alt: #eee6da;
+  --s-texto: #2b2620;
+  --s-card: #fffdf9;
+  --s-raio: 0.35rem;
+  --s-raio-sm: 0.25rem;
+  --s-fonte-titulo: var(--font-cormorant), "Times New Roman", serif;
+  --s-titulo-peso: 500;
+  --s-titulo-espaco: -0.01em;
+  --s-sombra: 0 1px 0 rgb(43 38 32 / 0.06);
+}
+
+.site[data-tema="energia"] {
+  --s-fundo: #0b0d14;
+  --s-fundo-alt: #11141f;
+  --s-texto: #f4f5f8;
+  --s-suave: #a3a8b8;
+  --s-borda: rgb(255 255 255 / 0.08);
+  --s-card: #151927;
+  --s-raio: 0.6rem;
+  --s-raio-sm: 0.4rem;
+  --s-fonte-titulo: var(--font-archivo), "Arial Black", sans-serif;
+  --s-titulo-peso: 800;
+  --s-titulo-caixa: uppercase;
+  --s-titulo-espaco: -0.03em;
+  --s-sombra: 0 0 0 1px rgb(255 255 255 / 0.06), 0 20px 40px -20px color-mix(in oklab, var(--s-marca) 45%, transparent);
+}
+
+.site .s-titulo {
+  font-family: var(--s-fonte-titulo);
+  font-weight: var(--s-titulo-peso);
+  text-transform: var(--s-titulo-caixa);
+  letter-spacing: var(--s-titulo-espaco);
+  line-height: 1.05;
+  text-wrap: balance;
+}
+.site[data-tema="zen"] .s-titulo {
+  line-height: 1.1;
+}
+
+.site .s-sobrelinha {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--s-marca);
+}
+.site[data-tema="energia"] .s-sobrelinha {
+  color: color-mix(in oklab, var(--s-marca) 70%, white);
+}
+
+.site .s-botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  background: var(--s-marca);
+  color: var(--s-marca-txt);
+  font-weight: 600;
+  padding: 0.85rem 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  box-shadow: 0 10px 24px -10px color-mix(in oklab, var(--s-marca) 70%, transparent);
+}
+.site .s-botao:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+.site .s-botao:focus-visible,
+.site a:focus-visible,
+.site summary:focus-visible,
+.site input:focus-visible,
+.site textarea:focus-visible,
+.site select:focus-visible {
+  outline: 2px solid var(--s-marca);
+  outline-offset: 2px;
+}
+.site[data-tema="zen"] .s-botao {
+  border-radius: var(--s-raio-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  box-shadow: none;
+}
+.site[data-tema="energia"] .s-botao {
+  border-radius: var(--s-raio-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 800;
+}
+.site .s-botao-sec {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--s-borda);
+  padding: 0.8rem 1.4rem;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+.site .s-botao-sec:hover {
+  background: color-mix(in oklab, var(--s-marca) 10%, transparent);
+}
+.site[data-tema="zen"] .s-botao-sec,
+.site[data-tema="energia"] .s-botao-sec {
+  border-radius: var(--s-raio-sm);
+}
+
+.site .s-card {
+  background: var(--s-card);
+  border: 1px solid var(--s-borda);
+  border-radius: var(--s-raio);
+  box-shadow: var(--s-sombra);
+}
+
+.site .s-campo {
+  width: 100%;
+  border-radius: var(--s-raio-sm);
+  border: 1px solid var(--s-borda);
+  background: var(--s-fundo);
+  color: var(--s-texto);
+  padding: 0.75rem 0.9rem;
+  font-size: 1rem; /* 16px: o iPhone não dá zoom no foco */
+}
+.site .s-campo::placeholder {
+  color: var(--s-suave);
+}
+
+/* ---------------------------------------------------------------- arte (sem foto) */
+.site .s-arte {
+  background:
+    radial-gradient(120% 90% at 10% 10%, color-mix(in oklab, var(--s-marca) 55%, white) 0%, transparent 55%),
+    radial-gradient(90% 80% at 90% 80%, color-mix(in oklab, var(--s-marca) 85%, black) 0%, transparent 60%),
+    color-mix(in oklab, var(--s-marca) 40%, var(--s-fundo));
+}
+.site[data-tema="zen"] .s-arte {
+  background:
+    radial-gradient(70% 70% at 70% 30%, color-mix(in oklab, var(--s-marca) 30%, #f6f1ea) 0%, transparent 70%),
+    linear-gradient(160deg, #e9dfd0, #d9cbb7);
+}
+.site[data-tema="energia"] .s-arte {
+  background:
+    repeating-linear-gradient(-45deg, transparent 0 18px, color-mix(in oklab, var(--s-marca) 22%, transparent) 18px 20px),
+    radial-gradient(80% 80% at 30% 20%, color-mix(in oklab, var(--s-marca) 60%, transparent), transparent 70%),
+    #151927;
+}
+
+/* ---------------------------------------------------------------- aurora: bolhas de luz no hero */
+.site .s-bolha {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(60px);
+  opacity: 0.55;
+  background: var(--s-marca);
+  will-change: transform;
+}
+.site .s-bolha-2 {
+  background: color-mix(in oklab, var(--s-marca) 50%, #ffd6a5);
+}
+
+/* ---------------------------------------------------------------- FAQ */
+.site details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.site details > summary::-webkit-details-marker {
+  display: none;
+}
+.site details .s-mais {
+  transition: transform 0.25s ease;
+}
+.site details[open] .s-mais {
+  transform: rotate(45deg);
+}
+
+/* ---------------------------------------------------------------- grade: rolagem lateral no celular */
+.site .s-rolagem {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+}
+.site .s-rolagem > * {
+  scroll-snap-align: start;
+}
+
+/* ---------------------------------------------------------------- animações */
+@keyframes s-surge {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes s-flutua {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.08);
+  }
+}
+@keyframes s-pulso {
+  0% {
+    box-shadow: 0 0 0 0 rgb(37 211 102 / 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgb(37 211 102 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(37 211 102 / 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .site .s-entra {
+    animation: s-surge 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .site .s-entra-2 {
+    animation-delay: 0.12s;
+  }
+  .site .s-entra-3 {
+    animation-delay: 0.24s;
+  }
+  .site .s-bolha {
+    animation: s-flutua 14s ease-in-out infinite;
+  }
+  .site .s-bolha-2 {
+    animation-duration: 18s;
+    animation-direction: reverse;
+  }
+  .site .s-whats {
+    animation: s-pulso 2.4s ease-out 3;
+  }
+  .site .s-zoom img {
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .site .s-zoom:hover img {
+    transform: scale(1.04);
+  }
+  @supports (animation-timeline: view()) {
+    .site .s-revela {
+      animation: s-surge linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}

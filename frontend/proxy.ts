@@ -7,11 +7,13 @@ import { REFRESH } from "@/lib/server/sessao";
 
 // "assinar": páginas públicas de assinatura de contrato/termo por link (módulo contratos)
 // "app": app do aluno (sessão própria, BFF em /app/api)
-// "cadastro", "primeiro-acesso", "aprovar": telas públicas do Admin MayaFit (formulário do site e links de e-mail)
-const PUBLICAS = /^\/(login|esqueci-senha|redefinir-senha|assinar|app|cadastro|primeiro-acesso|aprovar)(\/|$)/;
+// "cadastro", "primeiro-acesso", "aprovar": telas públicas do Admin MayaFit; "s" e "sitemap.xml": site público do estúdio
+const PUBLICAS = /^\/(login|esqueci-senha|redefinir-senha|assinar|app|cadastro|primeiro-acesso|aprovar|s|sitemap\.xml)(\/|$)/;
 
 export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
+  // site do estúdio na raiz do endereço para quem não está logado (sem site publicado, /s manda para o login)
+  if (pathname === "/" && !req.cookies.has(REFRESH)) return NextResponse.rewrite(new URL("/s", req.url));
   if (PUBLICAS.test(pathname) || req.cookies.has(REFRESH)) return NextResponse.next();
   const url = req.nextUrl.clone();
   url.pathname = "/login";

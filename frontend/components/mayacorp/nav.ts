@@ -13,6 +13,7 @@ import {
   FileSignature,
   FileText,
   FolderTree,
+  Globe,
   HeartPulse,
   Home,
   Landmark,
@@ -128,6 +129,7 @@ export const NAV: NavGrupo[] = [
     itens: [
       { label: "WhatsApp", href: "/comunicacao/whatsapp", icone: MessageCircle, permissao: "whatsapp.ver", planejado: false },
       { label: "Comunicados", href: "/comunicacao/comunicados", icone: Megaphone, permissao: "comunicacao.ver", planejado: false },
+      { label: "Site do estúdio", href: "/site", icone: Globe, permissao: "site.ver", planejado: false },
       { label: "Integrações", href: "/configuracoes/integracoes", icone: Link2, permissao: "integracoes.ver", planejado: false },
     ],
   },

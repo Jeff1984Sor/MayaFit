@@ -11,7 +11,7 @@
   --font-mono: var(--font-jetbrains);
   --font-heading: var(--font-dm-sans);
 
-  --color-navy: #4a1a2c;
+  --color-navy: #1e2d6b;
   --color-indigo-maya: #7c8fff;
   --color-teal-maya: #1a8f5e;
   --color-amber-maya: #f5a623;
@@ -74,9 +74,9 @@
 
 /* Paleta MayaCorp — a cor de destaque do cliente (white-label) sobrescreve --brand em runtime. */
 :root {
-  --brand: #b0486b;
+  --brand: #7c8fff;
   --brand-foreground: #ffffff;
-  --navy: #4a1a2c;
+  --navy: #1e2d6b;
   --success: #1a8f5e;
   --warning: #f5a623;
   --danger: #c94343;
@@ -85,7 +85,7 @@
   --success-ink: #1a8f5e;
   --warning-ink: color-mix(in oklab, #f5a623 58%, #0f1729);
   --danger-ink: #c94343;
-  --info-ink: #6b1f3a;
+  --info-ink: #1e2d6b;
 
   --background: #f7f8fc;
   --foreground: #0f1729;
@@ -93,7 +93,7 @@
   --card-foreground: #0f1729;
   --popover: #ffffff;
   --popover-foreground: #0f1729;
-  --primary: #6b1f3a;
+  --primary: #1e2d6b;
   --primary-foreground: #ffffff;
   --secondary: color-mix(in oklab, #7c8fff 10%, #f7f8fc);
   --secondary-foreground: #1e2d6b;

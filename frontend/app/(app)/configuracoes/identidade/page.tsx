@@ -18,6 +18,8 @@ import type { IdentidadeOut } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const PRESETS = [
+  { n: "Indigo MayaCorp", c: "#7C8FFF" },
+  { n: "Navy", c: "#1E2D6B" },
   { n: "Marsala", c: "#B0486B" },
   { n: "Vinho", c: "#4A1A2C" },
   { n: "Teal", c: "#1A8F5E" },
@@ -84,7 +86,7 @@ export default function IdentidadePage() {
   const brand = useBrand();
   const q = useQuery({ queryKey: ["identidade"], queryFn: () => api.get<IdentidadeOut>("/config/identidade") });
   const [nome, setNome] = useState("");
-  const [cor, setCor] = useState("#B0486B");
+  const [cor, setCor] = useState("#7C8FFF");
   const [usarCor, setUsarCor] = useState(false);
   const [assinatura, setAssinatura] = useState("");
   const [logoLocal, setLogoLocal] = useState<string | null>(null);
@@ -94,7 +96,7 @@ export default function IdentidadePage() {
     if (!q.data) return;
     setNome(q.data.nome_exibicao);
     setUsarCor(!!q.data.cor_destaque);
-    setCor(q.data.cor_destaque ?? "#B0486B");
+    setCor(q.data.cor_destaque ?? "#7C8FFF");
     setAssinatura(q.data.assinatura_email ?? "");
   }, [q.data]);
   /* eslint-enable react-hooks/set-state-in-effect */
@@ -243,7 +245,7 @@ export default function IdentidadePage() {
                 if (!q.data) return;
                 setNome(q.data.nome_exibicao);
                 setUsarCor(!!q.data.cor_destaque);
-                setCor(q.data.cor_destaque ?? "#B0486B");
+                setCor(q.data.cor_destaque ?? "#7C8FFF");
                 setAssinatura(q.data.assinatura_email ?? "");
               }}
             >
@@ -258,7 +260,7 @@ export default function IdentidadePage() {
 
       <div className="space-y-3 xl:sticky xl:top-[calc(var(--tb)+var(--faixa)+24px)] xl:h-fit">
         <p className="text-sm font-medium">Pré-visualização ao vivo</p>
-        <Preview nome={nome || "Cliente"} cor={usarCor ? cor : "#B0486B"} logo={logo} />
+        <Preview nome={nome || "Cliente"} cor={usarCor ? cor : "#7C8FFF"} logo={logo} />
         <p className="text-xs text-muted-foreground">A cor já está aplicada em todo o sistema enquanto você edita. Salve para valer para todos.</p>
       </div>
     </div>

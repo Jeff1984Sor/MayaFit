@@ -18,7 +18,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#b0486b",
+  themeColor: "#7c8fff",
 };
 
 export default function AlunoLayout({ children }: { children: React.ReactNode }) {

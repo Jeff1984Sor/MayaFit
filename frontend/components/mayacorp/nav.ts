@@ -8,6 +8,7 @@ import {
   CalendarClock,
   CalendarDays,
   ClipboardList,
+  DoorOpen,
   Clock,
   FileSignature,
   FileText,
@@ -23,8 +24,11 @@ import {
   Palette,
   Percent,
   ReceiptText,
+  Router,
   Repeat,
+  ScanFace,
   ScrollText,
+  Settings2,
   ShieldCheck,
   Sparkles,
   Stethoscope,
@@ -71,6 +75,16 @@ export const NAV: NavGrupo[] = [
   {
     titulo: "Alunos",
     itens: [{ label: "Alunos", href: "/alunos", icone: UsersRound, permissao: "alunos.ver" }],
+  },
+  {
+    titulo: "Controle de acesso",
+    itens: [
+      { label: "Quem está aqui", href: "/acesso", icone: DoorOpen, permissao: "acesso.ver", planejado: false, exato: true },
+      { label: "Histórico de acessos", href: "/acesso/historico", icone: BarChart3, permissao: "acesso.ver", planejado: false },
+      { label: "Biometria e PIN", href: "/acesso/biometria", icone: ScanFace, permissao: "acesso.ver", planejado: false },
+      { label: "Catracas e totens", href: "/acesso/equipamentos", icone: Router, permissao: "acesso.ver", planejado: false },
+      { label: "Regras de acesso", href: "/acesso/configuracoes", icone: Settings2, permissao: "acesso.ver", planejado: false },
+    ],
   },
   {
     titulo: "Contratos",

@@ -7,11 +7,20 @@ import { REFRESH } from "@/lib/server/sessao";
 
 // "assinar": páginas públicas de assinatura de contrato/termo por link (módulo contratos)
 // "app": app do aluno (sessão própria, BFF em /app/api)
-const PUBLICAS = /^\/(login|esqueci-senha|redefinir-senha|assinar|app)(\/|$)/;
+// "totem": totem de check-in (sessão própria: token do dispositivo em cookie httpOnly; BFF em /totem/api) e modelos faciais
+const PUBLICAS = /^\/(login|esqueci-senha|redefinir-senha|assinar|app|totem)(\/|$)/;
+// controle de acesso: única área que usa a câmera (o next.config bloqueia a câmera no resto do sistema)
+const COM_CAMERA = /^\/(totem|acesso)(\/|$)/;
+
+function seguir(pathname: string) {
+  const res = NextResponse.next();
+  if (COM_CAMERA.test(pathname)) res.headers.set("Permissions-Policy", "camera=(self), microphone=(), geolocation=()");
+  return res;
+}
 
 export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-  if (PUBLICAS.test(pathname) || req.cookies.has(REFRESH)) return NextResponse.next();
+  if (PUBLICAS.test(pathname) || req.cookies.has(REFRESH)) return seguir(pathname);
   const url = req.nextUrl.clone();
   url.pathname = "/login";
   url.search = pathname === "/" ? "" : `?volta=${encodeURIComponent(pathname + search)}`;

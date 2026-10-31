@@ -1,7 +1,7 @@
 """Integração Wellhub (antigo Gympass): configuração, mapeamento, horários publicados, alunos, reservas, eventos e check-ins.
 
 Revision ID: 0140_wellhub
-Revises: 0120_site
+Revises: 0130_acesso
 """
 
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ import app.core.db  # noqa: F401  (UtcDateTime)
 from alembic import op
 
 revision = "0140_wellhub"
-down_revision = "0120_site"
+down_revision = "0130_acesso"
 branch_labels = None
 depends_on = None
 

@@ -82,6 +82,9 @@ CATALOGO: list[dict] = [
         {"id": "acesso", "nome": "Controle de acesso (check-in, biometria, catracas e totens)",
          "acoes": ["ver", "configurar", "liberar_manual"]},
     ]},
+    {"grupo": "Fiscal", "recursos": [
+        {"id": "nfse", "nome": "NFS-e (notas fiscais de serviço)", "acoes": ["ver", "emitir", "cancelar", "configurar"]},
+    ]},
 ]
 
 TODAS = {f"{r['id']}.{a}" for g in CATALOGO for r in g["recursos"] for a in r["acoes"]}

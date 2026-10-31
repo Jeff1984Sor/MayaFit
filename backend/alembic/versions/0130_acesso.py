@@ -2,7 +2,7 @@
 (totem/agente), registros de acesso e fila de comandos do agente local.
 
 Revision ID: 0130_acesso
-Revises: 0001_pilates_inicial
+Revises: 0120_site
 """
 
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ import app.core.db  # noqa: F401  (UtcDateTime)
 from alembic import op
 
 revision = "0130_acesso"
-down_revision = "0001_pilates_inicial"
+down_revision = "0120_site"
 branch_labels = None
 depends_on = None
 

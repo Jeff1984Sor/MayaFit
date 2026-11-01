@@ -321,7 +321,8 @@ def test_migracao_0140_igual_aos_modelos_e_reversivel():
         return mod
 
     inicial, wellhub = carregar("0001_esquema_inicial"), carregar("0140_wellhub")
-    assert wellhub.revision == "0140_wellhub" and wellhub.down_revision == "0001_pilates_inicial" == inicial.revision
+    assert wellhub.revision == "0140_wellhub" and wellhub.down_revision == "0130_acesso"  # fila única da integração
+    assert inicial.revision == "0001_pilates_inicial"
     via = create_engine("sqlite://")
     with via.begin() as conn, Operations.context(MigrationContext.configure(conn)):
         inicial.upgrade()

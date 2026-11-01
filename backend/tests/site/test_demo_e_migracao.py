@@ -34,7 +34,7 @@ def test_demo_nao_sobrescreve_site_do_estudio(db, estudio):
     assert db.get(SiteConfig, 1).conteudo["hero"]["titulo"] == "Meu título"
 
 
-def test_migracao_encadeada_na_0001():
+def test_migracao_encadeada_na_fila():
     txt = (Path(__file__).parents[2] / "alembic" / "versions" / "0120_site.py").read_text(encoding="utf-8")
-    assert 'revision = "0120_site"' in txt and 'down_revision = "0001_pilates_inicial"' in txt
+    assert 'revision = "0120_site"' in txt and 'down_revision = "0110_crm"' in txt  # fila única definida na integração
     assert "site_config" in txt and "site_contato" in txt

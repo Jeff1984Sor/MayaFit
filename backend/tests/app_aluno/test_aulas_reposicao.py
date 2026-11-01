@@ -8,7 +8,7 @@ from app.core.models import Auditoria
 from app.modules.agenda import servico as agenda
 from app.modules.agenda.models import AulaSessao, Reserva, StatusReserva
 from tests.agenda import fabrica
-from tests.app_aluno.conftest import cab, entrar_aluno
+from tests.app_aluno.conftest import AGORA_FIXO, cab, entrar_aluno
 
 B = "/api/aluno-app"
 
@@ -22,7 +22,7 @@ def test_lista_so_as_proprias_aulas_futuras_sem_canceladas(client, db, cenario, 
     fabrica.reserva_direta(db, cenario.ana, passada)
     cancelada = fabrica.sessao(db, cenario.un, cenario.srv, cenario.prof, dia=date(2026, 10, 27))
     rc = fabrica.reserva_direta(db, cenario.ana, cancelada)
-    agenda.desmarcar_reserva(db, rc.id)
+    agenda.desmarcar_reserva(db, rc.id, agora=AGORA_FIXO)  # mesmo relógio congelado do app
     db.commit()
     aulas = client.get(f"{B}/aulas", headers=ana_logada).json()
     assert [a["id"] for a in aulas] == [cenario.r_ana.id]

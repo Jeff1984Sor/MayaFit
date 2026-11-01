@@ -65,6 +65,12 @@ def fundacao(monkeypatch, tmp_path):
     f = Fundacao()
     monkeypatch.setattr(ponte, "atual", lambda: f.atual)
     monkeypatch.setattr(ponte, "multi", lambda: f.multi)
+    # com a fundação de verdade no código, "abrir o banco do estúdio" apontaria para um arquivo que não existe:
+    # aqui todo estúdio usa o banco do teste (banco=None = o principal)
+    from app.core import tenancy
+
+    monkeypatch.setattr(ponte, "estudio_de",
+                        lambda c: tenancy.Estudio(slug=c.slug, banco=None, mayacorp=c.tipo == "mayacorp"))
 
     def provisionar(slug, nome, *, admin_email, admin_nome="", dias_teste=None, dominios=None, tipo="estudio",
                     admin_login=None, admin_senha=None, primeiro_acesso=False, **ficha):

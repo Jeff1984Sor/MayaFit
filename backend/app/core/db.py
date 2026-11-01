@@ -32,7 +32,8 @@ class UtcDateTime(TypeDecorator):
             value = datetime.combine(value, time.min)
         if value.tzinfo is None:
             value = value.replace(tzinfo=UTC)
-        return value
+        # sempre em UTC: o SQLite descarta o fuso, e 23:59-03:00 virava 23:59 UTC (3 h antes)
+        return value.astimezone(UTC)
 
     def process_result_value(self, value, dialect):
         if value is not None and value.tzinfo is None:

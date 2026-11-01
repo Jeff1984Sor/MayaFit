@@ -19,7 +19,10 @@ CPF_PROF = cpf_valido(555666777)
 
 @pytest.fixture(autouse=True)
 def _relogio(monkeypatch):
-    monkeypatch.setattr(servico, "agora", lambda: datetime(2026, 10, 25, 15, 0, tzinfo=UTC))
+    from app.modules.financeiro import recibos_saude
+
+    for mod in (servico, recibos_saude):  # o recibo usa o relógio dele (nome do arquivo com a data)
+        monkeypatch.setattr(mod, "agora", lambda: datetime(2026, 10, 25, 15, 0, tzinfo=UTC))
 
 
 @pytest.fixture

@@ -14,6 +14,7 @@ os.environ["WORKER_EMBUTIDO"] = "false"
 os.environ["ALLOWED_HOSTS"] = '["localhost", "127.0.0.1", "testserver"]'
 os.environ["CORS_ORIGINS"] = '["http://localhost:3000", "http://127.0.0.1:3000"]'
 os.environ["FRONTEND_URL"] = "http://localhost:3000"
+os.environ["DOMINIO_BASE"] = ""  # o subdomínio dos estúdios vem de cada teste, não do .env de produção
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

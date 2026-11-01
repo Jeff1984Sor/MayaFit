@@ -194,10 +194,12 @@ def test_agente_local_busca_executa_e_devolve(client, db, full, cenario, relogio
 
 def test_liberacao_manual_exige_motivo_permissao_e_audita(client, db, full, secretaria, cenario):
     assert client.post("/api/acesso/liberar", headers=full, json={"motivo": ""}).status_code == 422
-    assert client.post("/api/acesso/liberar", headers=secretaria, json={"motivo": "Visita"}).status_code == 403
+    # decisão do Jefferson (31/10/2026): a Secretária libera a catraca (com motivo, auditado)
+    assert client.post("/api/acesso/liberar", headers=secretaria, json={"motivo": "Visita"}).status_code == 200
     r = client.post("/api/acesso/liberar", headers=full, json={"motivo": "Aluna sem celular", "aluno_id": cenario.ana.id})
     assert r.status_code == 200 and r.json()["permitido"]
     reg = db.get(RegistroAcesso, r.json()["registro_id"])
     assert reg.metodo == "manual" and reg.usuario_nome == "Usuário Full" and "Aluna sem celular" in reg.motivo
-    aud = db.scalar(select(Auditoria).where(Auditoria.acao == "liberar_manual"))
-    assert aud and "Aluna sem celular" in aud.descricao
+    auds = list(db.scalars(select(Auditoria).where(Auditoria.acao == "liberar_manual")))
+    assert {a.usuario_nome for a in auds} >= {"Usuário Full"} and len(auds) == 2  # a da Secretária também fica
+    assert any("Aluna sem celular" in a.descricao for a in auds) and any("Visita" in a.descricao for a in auds)

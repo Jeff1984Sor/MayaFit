@@ -101,7 +101,9 @@ def test_lista_de_alunos_com_status_de_biometria(client, full, cenario):
 def test_permissoes_do_modulo(client, db, full, secretaria, cenario):
     from app.core.models import PerfilAcesso
 
-    assert client.get("/api/acesso/painel", headers=secretaria).status_code == 403
+    # Secretária: vê o painel e libera a catraca (31/10/2026); configurar continua só com o Full
+    assert client.get("/api/acesso/painel", headers=secretaria).status_code == 200
+    assert client.put("/api/acesso/config", headers=secretaria, json={}).status_code == 403
     p = PerfilAcesso(nome="Recepção acesso", permissoes=["acesso.ver", "acesso.liberar_manual"])
     db.add(p)
     db.commit()

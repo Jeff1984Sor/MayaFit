@@ -50,7 +50,7 @@ BANCOS = {
     "demo-respira-pilates": (40, 3),
     "demo-alongar": (20, 1),
 }
-SECRETARIA = "Rita Campos"
+NOME_RECEPCAO = "Rita Campos"
 
 SOLICITACOES = [
     ("Ateliê do Movimento", "Marina Duarte", "marina@ateliedomovimento.exemplo", "nova", 85),
@@ -200,7 +200,7 @@ def criar_bancos(senha: str | None = None, *, dominio_base: str | None = None, h
                 service._primeiro_admin(s, responsavel or f"Responsável {nome}", f"dono@{slug}.exemplo", "dono", senha)
                 padrao = perfis.garantir_padrao(s)
                 profs = [p[0] for p in PERFIS[perfil]["profissionais"] if p[4]]
-                equipe = [(profs[0], "Professor"), (SECRETARIA, "Secretária"), *((p, "Professor") for p in profs[1:])]
+                equipe = [(profs[0], "Professor"), (NOME_RECEPCAO, "Secretária"), *((p, "Professor") for p in profs[1:])]
                 for nome_u, perfil_u in equipe[: max(usuarios - 1, 0)]:
                     login = nome_u.split()[0].lower().translate(str.maketrans("áéíóúâêôãõç", "aeiouaeoaoc"))
                     s.add(Usuario(nome=nome_u, email=f"{login}@{slug}.exemplo", login=login, perfil_acesso_id=padrao[perfil_u].id,

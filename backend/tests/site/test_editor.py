@@ -97,9 +97,10 @@ def test_rota_publica_de_imagem_nao_serve_outros_arquivos(client):
 
 def test_permissoes(client, h_prof, h_sec):
     assert client.get("/api/site").status_code == 401
-    for h in (h_prof, h_sec):  # perfis padrão sem `site.*`: só Full (ou perfil dado pela matriz)
-        assert client.get("/api/site", headers=h).status_code == 403
-        assert client.post("/api/site/publicar", headers=h).status_code == 403
+    # Professor não mexe no site; a Secretária edita e publica (decisão do Jefferson, 31/10/2026)
+    assert client.get("/api/site", headers=h_prof).status_code == 403
+    assert client.post("/api/site/publicar", headers=h_prof).status_code == 403
+    assert client.get("/api/site", headers=h_sec).status_code == 200
 
 
 def test_perfil_so_com_ver_nao_publica(client, db, estudio):

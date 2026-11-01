@@ -36,7 +36,8 @@ export async function cabecalhosApi(extra?: Record<string, string>): Promise<Hea
  * (metadata e página compartilham o resultado). */
 export const carregarPagina = cache(async (): Promise<PaginaPublica | null> => {
   const r = await fetch(`${API_INTERNA}/site-publico/pagina`, { headers: await cabecalhosApi(), cache: "no-store" });
-  if (r.status === 404) return null;
+  // 404: site fora do ar · 401/403: endereço sem estúdio (principal, admin) → a página manda para o login
+  if (r.status === 404 || r.status === 401 || r.status === 403) return null;
   if (!r.ok) throw new Error(`site: API respondeu ${r.status}`);
   return (await r.json()) as PaginaPublica;
 });

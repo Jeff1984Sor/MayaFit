@@ -72,7 +72,8 @@ def popular_demo(db: Session, *, agora: datetime | None = None) -> dict:
     dia = inicio
     while dia <= hoje:
         for k, (aluno_id, gid) in enumerate(alunos):
-            if (dia.day + k) % 3 == 0:  # padrão determinístico: ~1 em cada 3 dias por aluno
+            # padrão determinístico: ~1 em cada 3 dias por aluno; o 1º aluno sempre vem hoje (no dia 1º o mês não fica zerado)
+            if (dia.day + k) % 3 == 0 or (dia == hoje and k == 0):
                 quando = momento_da_sessao(dia, time(7 + k * 2, 0))
                 validado = dia < hoje or k == 0
                 db.add(WellhubCheckin(config_id=cfg.id, aluno_id=aluno_id, gympass_id=gid, dia=dia, ocorrido_em=quando,

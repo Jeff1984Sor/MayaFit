@@ -22,7 +22,14 @@ function seguir(pathname: string) {
 export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   // site do estúdio na raiz do endereço para quem não está logado (sem site publicado, /s manda para o login)
-  if (pathname === "/" && !req.cookies.has(REFRESH)) return NextResponse.rewrite(new URL("/s", req.url));
+  if (pathname === "/" && !req.cookies.has(REFRESH)) {
+    // atrás do nginx a URL chega como https (X-Forwarded-Proto), mas o Next escuta em http: sem isto a reescrita
+    // vira um proxy externo para https://localhost:<porta> e dá erro 500
+    const site = req.nextUrl.clone();
+    site.pathname = "/s";
+    site.protocol = "http:";
+    return NextResponse.rewrite(site);
+  }
   if (PUBLICAS.test(pathname) || req.cookies.has(REFRESH)) return seguir(pathname);
   const url = req.nextUrl.clone();
   url.pathname = "/login";

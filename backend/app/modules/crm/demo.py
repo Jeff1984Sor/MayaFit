@@ -14,6 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.db import agora
+from app.modules.alunos.models import Aluno
 from app.modules.crm import regras, servico
 from app.modules.crm.models import (
     CrmEtapa,
@@ -98,6 +99,8 @@ def popular_demo(db: Session) -> int:
         if etapa.tipo == TipoEtapa.GANHO:
             lead.situacao, lead.ganho_em = SituacaoLead.GANHO, agora_ - timedelta(days=extra.get("ganho_dias", 1))
             lead.etapa_desde = lead.ganho_em
+            # o aluno da matrícula (os dados de base da demonstração criam os leads convertidos com o mesmo nome)
+            lead.aluno_id = db.scalar(select(Aluno.id).where(Aluno.nome == nome).limit(1))
         elif etapa.tipo == TipoEtapa.PERDIDO:
             motivo = motivos.get(extra.get("motivo", "")) or next(iter(motivos.values()))
             lead.situacao, lead.perdido_em, lead.motivo_perda_id = SituacaoLead.PERDIDO, criado + timedelta(days=3), motivo.id

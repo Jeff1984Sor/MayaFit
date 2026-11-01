@@ -10,6 +10,7 @@ from __future__ import annotations
 from datetime import timedelta
 from decimal import Decimal
 
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -88,4 +89,28 @@ def popular_demo(db: Session) -> dict:
         if destino == "cancelada" and nota.status == StatusNota.emitida:
             servico.cancelar(db, nota, "1", "Emitida em duplicidade (exemplo de cancelamento)", None)
     db.commit()
+    criadas += _notas_de_recebimentos(db)
     return {"criadas": criadas}
+
+
+def _notas_de_recebimentos(db: Session, quantas: int = 8) -> int:
+    """Notas dos últimos recebimentos PAGOS de alunos (quando o estúdio já tem financeiro): o mesmo fluxo da tela
+    "Emitir pelos recebimentos". Idempotente pela chave do recebimento."""
+    from app.modules.financeiro.models import ContaReceber, StatusReceber
+
+    pagos = db.scalars(select(ContaReceber).where(ContaReceber.status == StatusReceber.PAGO, ContaReceber.contrato_id.is_not(None))
+                       .order_by(ContaReceber.pagamento.desc(), ContaReceber.id.desc()).limit(quantas)).all()
+    criadas = 0
+    for conta in pagos:
+        if servico.nota_do_recebimento(db, conta.id) is not None:
+            continue
+        try:
+            nota = servico.enfileirar_recebimento(db, conta.id, origem="recebimento")
+        except HTTPException:  # recebimento com pendência (ex.: aluno sem CPF): fica para a tela mostrar
+            db.rollback()
+            continue
+        db.commit()
+        servico.processar(db, nota)
+        db.commit()
+        criadas += 1
+    return criadas

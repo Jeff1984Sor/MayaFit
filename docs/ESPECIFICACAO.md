@@ -60,7 +60,7 @@ Regras (numeradas para referência nos testes):
 - **P4.** Indicação: 5% de desconto por estúdio indicado ativo, teto de 10% (editável no admin).
 - **P5.** Extras liberados cliente a cliente: Receita Saúde, migração de dados (ETL) e catraca avulsa para o Pro.
 - **P6.** Cobrança pelo Mercado Pago: link mensal por e-mail (Pix, cartão, boleto) ou assinatura no cartão. Régua de avisos: 3 dias antes, no dia, 3 e 10 dias depois.
-- **P7.** Inadimplência: 10 dias após o vencimento o estúdio fica **suspenso** (continua entrando, com faixa de aviso e link de pagamento). Com 30 dias passa a **inativo** (não entra), só por ação manual da MayaCorp. Os dados nunca são apagados.
+- **P7.** Inadimplência: **30 dias** após o vencimento o estúdio fica **suspenso** automaticamente (continua entrando, com faixa de aviso e link de pagamento); pagou, volta a ativo sozinho. **Inativo** (não entra) só por ação manual do Admin MayaFit. Os dados nunca são apagados. *(decisão do Jefferson, 31/10/2026)*
 - **P8.** Recurso fora do plano aparece no menu com cadeado e a mensagem "Disponível no plano X", com botão para falar com o MayaFit. Nunca some sem explicação.
 
 ---

@@ -94,12 +94,15 @@ def _usuario_out(u: Usuario) -> UsuarioOut:
 
 @router.get("/usuarios", response_model=list[UsuarioOut])
 def listar_usuarios(ctx: Ctx):
-    return [_usuario_out(u) for u in ctx.db.scalars(select(Usuario).order_by(Usuario.nome))]
+    # o usuário Suporte da MayaCorp fica escondido do estúdio (decisão do Jefferson, 31/10/2026); só o Admin MayaFit o vê
+    q = select(Usuario).where(Usuario.suporte.is_not(True)).order_by(Usuario.nome)
+    return [_usuario_out(u) for u in ctx.db.scalars(q)]
 
 
 def _usuario(ctx, uid: int) -> Usuario:
     u = ctx.db.get(Usuario, uid)
-    if not u:
+    if not u or (u.suporte and not ctx.usuario.suporte):  # o estúdio não edita nem desativa o Suporte
+
         raise HTTPException(404, "Usuário não encontrado.")
     return u
 

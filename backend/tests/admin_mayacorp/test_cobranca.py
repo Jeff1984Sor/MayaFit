@@ -172,8 +172,9 @@ def test_regua_fim_do_teste_e_suspensao(client, fundacao, adm, mp, emails_admin)
     assert cobranca.rotina_diaria(date(2026, 11, 6))["avisos"] >= 1
     with SessaoControle() as ctl:
         assert ctl.get(Cobranca, kid).avisos == [-3, 0, 3]  # um e-mail só, com o passo mais recente
-    # 15 dias de atraso → suspenso (com aviso); pagou → volta a ativo
-    assert cobranca.suspender_atrasados(date(2026, 11, 16)) == ["pilates-lumina"]
+    # 30 dias de atraso → suspenso (com aviso); antes disso, não; pagou → volta a ativo
+    assert cobranca.suspender_atrasados(date(2026, 11, 16)) == []
+    assert cobranca.suspender_atrasados(date(2026, 12, 1)) == ["pilates-lumina"]
     assert client.get(f"/api/admin/clientes/{est['id']}", headers=adm).json()["status"] == "suspenso"
     assert any("acesso suspenso" in a for _, a, _, _ in emails_admin)
     with SessaoControle() as ctl:

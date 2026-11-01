@@ -111,6 +111,8 @@ _SECRETARIA = (
     # decisão do Jefferson (25/10/2026): a Secretária também edita horários, bloqueios, termos e modelos
     | {"cadastros_horarios.editar", "cadastros_bloqueios.editar", "cadastros_termos.editar", "cadastros_modelos.editar"}
     | {"crm.ver", "crm.editar"}  # CRM de vendas: a Secretária atende e move os leads (excluir fica com o Full)
+    # decisão do Jefferson (31/10/2026): a Secretária edita o site e libera a catraca (configurar fica com o Full)
+    | {"site.ver", "site.editar", "acesso.ver", "acesso.liberar_manual"}
 )
 
 # Perfis criados de saída (decisão do Jefferson: só três; outros se criam pela matriz de permissões).

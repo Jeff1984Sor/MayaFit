@@ -28,7 +28,7 @@ from app.core.db import agora
 log = logging.getLogger(__name__)
 
 COBRAVEIS = ("ativo", "suspenso")  # em teste não paga; inativo não tem acesso
-SUSPENDER_APOS_DIAS = 15
+SUSPENDER_APOS_DIAS = 30  # decisão do Jefferson (31/10/2026)
 DIAS_PARA_PAGAR = 3  # 1ª mensalidade (fim do teste / estúdio sem teste) vence em 3 dias
 MARCA = "MayaFit"
 

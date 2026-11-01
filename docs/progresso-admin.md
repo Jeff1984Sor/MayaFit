@@ -62,7 +62,7 @@ notas → alunos ativos, mais o que o Jefferson pediu (indicadores, linha do tem
 
 **Atraso e status**
 - **R14.** Status: `teste | ativo | suspenso | inativo`. Suspenso **entra e é avisado**; inativo não entra.
-- **R15.** Cobrança vencida há **15 dias** (`SUSPENDER_APOS_DIAS`) → estúdio **suspenso** automaticamente + e-mail.
+- **R15.** Cobrança vencida há **30 dias** (`SUSPENDER_APOS_DIAS`; decisão do Jefferson em 31/10/2026) → estúdio **suspenso** automaticamente + e-mail.
   Quando não sobra nada vencido (baixa manual ou pelo MP), volta a **ativo** sozinho.
 - **R16.** Suspender/Reativar manuais registram motivo opcional. Reativar só faz sentido para suspenso/inativo (senão 400).
 
@@ -106,7 +106,7 @@ notas → alunos ativos, mais o que o Jefferson pediu (indicadores, linha do tem
 4. Ficha: troca de plano/extras/status/endereços aparecem na linha do tempo; o endereço padrão não sai. (`test_ficha_status_dominios_e_linha_do_tempo`)
 5. Uso com foto e sem foto (coleta). (`test_uso_foto_ou_coleta`) · Usuários, convite, zerar senha, Suporte. (`test_usuarios_do_estudio`, `test_senha_do_suporte`)
 6. Mensalidade com excedentes (R$ 94,90 = 89,90 + 10 × 0,50), idempotente; webhook dá baixa; assinatura secreta errada é ignorada. (`test_cobranca.py`)
-7. Régua manda um aviso com o passo mais recente; 15 dias de atraso suspende; pagar reativa; fim do teste gera a 1ª mensalidade. (`test_regua_fim_do_teste_e_suspensao`)
+7. Régua manda um aviso com o passo mais recente; 30 dias de atraso suspende; pagar reativa; fim do teste gera a 1ª mensalidade. (`test_regua_fim_do_teste_e_suspensao`)
 8. Meu plano: upgrade, cartão, link; downgrade com usuários demais é barrado; só administrador. (`test_meu_plano_*`)
 9. Cadastro público → aprovação no admin ou pelo link (link vencido/de outra finalidade → 400); 6º cadastro na hora → 429. (`test_cadastro.py`)
 10. Início com a demonstração: MRR R$ 556,63 (550,13 + 6,50), churn 1 (20,0%), funil, receita de 12 meses, testes vencendo. (`test_inicio_com_dados_de_demonstracao`)

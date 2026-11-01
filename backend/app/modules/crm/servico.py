@@ -908,7 +908,7 @@ def excluir_motivo(ctx: Contexto, m: CrmMotivoPerda) -> str:
 # ------------------------------------------------------------------------------------------------ opções e resumo
 def opcoes(ctx: Contexto) -> sc.Opcoes:
     db = ctx.db
-    usuarios = [u for u in db.scalars(select(Usuario).where(Usuario.ativo.is_(True), Usuario.acesso_sistema.is_(True)).order_by(Usuario.nome))
+    usuarios = [u for u in db.scalars(select(Usuario).where(Usuario.ativo.is_(True), Usuario.acesso_sistema.is_(True), Usuario.suporte.is_not(True)).order_by(Usuario.nome))
                 if u.pode("crm.ver")]
     tags: dict[str, str] = {}
     for lista in db.scalars(select(CrmLead.tags).where(CrmLead.situacao == SituacaoLead.ABERTO).limit(2000)):

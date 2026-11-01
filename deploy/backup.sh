@@ -18,16 +18,20 @@ STORAGE="${STORAGE:-$APP_DIR/backend/storage}"
 umask 077
 mkdir -p "$DESTINO"
 DIA="$(date +%Y%m%d)"
-pg_dump "${DATABASE_URL/+psycopg/}" -Fc -f "$DESTINO/banco_$DIA.dump"
+URL="${DATABASE_URL/+psycopg/}"
+# um banco por estúdio: o principal, o controle (mayafit_controle) e o de cada estúdio (mayafit_<slug>), um arquivo cada
+BANCOS="$(psql "$URL" -tAc "SELECT datname FROM pg_database WHERE datname LIKE 'mayafit\_%' AND NOT datistemplate ORDER BY 1")"
+for b in $BANCOS; do
+  pg_dump "${URL%/*}/$b" -Fc -f "$DESTINO/banco_${b}_$DIA.dump"
+  pg_restore -l "$DESTINO/banco_${b}_$DIA.dump" >/dev/null   # um backup que não restaura não é backup
+done
 tar -czf "$DESTINO/arquivos_$DIA.tar.gz" -C "$(dirname "$STORAGE")" "$(basename "$STORAGE")"
-# confere que os dois arquivos abrem (um backup que não restaura não é backup)
-pg_restore -l "$DESTINO/banco_$DIA.dump" >/dev/null
 tar -tzf "$DESTINO/arquivos_$DIA.tar.gz" >/dev/null
 if [ "${BACKUP_INCLUIR_ENV:-0}" = "1" ]; then
   tar -czf "$DESTINO/env_$DIA.tar.gz" -C "$APP_DIR/backend" .env
 fi
 if command -v gcloud >/dev/null && [[ "$BUCKET" != *CONFIGURAR-BUCKET* ]]; then
-  gcloud storage cp -q "$DESTINO/banco_$DIA.dump" "$DESTINO/arquivos_$DIA.tar.gz" "$BUCKET/$DIA/"
+  gcloud storage cp -q "$DESTINO"/banco_*_"$DIA".dump "$DESTINO/arquivos_$DIA.tar.gz" "$BUCKET/$DIA/"
 fi
 find "$DESTINO" -type f -mtime +30 -delete
-echo "Backup $AMB $DIA ok (banco + $(du -sh "$STORAGE" | cut -f1) de arquivos)"
+echo "Backup $AMB $DIA ok ($(echo $BANCOS | wc -w) banco(s) + $(du -sh "$STORAGE" | cut -f1) de arquivos)"

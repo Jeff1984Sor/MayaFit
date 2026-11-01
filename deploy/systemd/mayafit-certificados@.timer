@@ -1,0 +1,10 @@
+[Unit]
+Description=MayaFit - confere endereços novos e certificados a cada 5 minutos (%i)
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

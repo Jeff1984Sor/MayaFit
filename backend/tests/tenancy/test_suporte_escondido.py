@@ -21,3 +21,13 @@ def test_suporte_fica_escondido_do_estudio(multi, client):
     assert client.patch(f"/api/config/usuarios/{sid}", headers=h, json={"ativo": False}).status_code == 404
     # mas ele continua entrando (é a equipe MayaCorp que dá suporte)
     assert entrar(client, "suporte.alfa", senha=SENHA_SUPORTE, host=HOST_ALFA).status_code == 200
+
+
+def test_slug_reservado_nao_vira_estudio(multi):
+    import pytest
+
+    from app.controle.service import RegraControle
+
+    for slug in ("admin", "prod", "controle"):
+        with pytest.raises(RegraControle, match="reservado"):
+            multi.provisionar(slug, "X", admin_email=f"x@{slug}.com")

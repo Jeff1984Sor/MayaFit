@@ -66,6 +66,8 @@ echo "=== 4/7  Migrations ==="
 # (o .env é lido pela própria aplicação; não dar `source`: o bash corrompe valores com colchetes/aspas)
 "$UV" run python -m alembic check >/dev/null 2>&1 || echo "    (aviso: há modelo sem migration gerada, confira)"
 "$UV" run python -m alembic upgrade head
+# um banco por estúdio: migra também o controle e o banco de cada estúdio ativo (sem o controle, não faz nada)
+"$UV" run python -m app.controle.cli migrar
 cd ..
 
 echo "=== 5/7  Frontend: build ==="
@@ -93,6 +95,8 @@ fi
 
 echo "=== 7/7  Reiniciando ==="
 sudo systemctl restart $SERVICOS
+# endereços e HTTPS: aplica mudanças do deploy/nginx/mayafit-locations.conf (só recarrega o nginx se mudou)
+sudo bash "$APP_DIR/deploy/certificados.sh" "$AMB" || echo "    (aviso: deploy/certificados.sh falhou; o site anterior segue no ar)"
 sleep 4
 systemctl is-active $SERVICOS
 CODIGO="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$API_PORTA/api/health" || echo 000)"

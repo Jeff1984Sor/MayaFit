@@ -24,6 +24,10 @@ from app.core.tenancy import Estudio
 log = logging.getLogger(__name__)
 
 SLUG = re.compile(r"^[a-z][a-z0-9-]{1,38}$")
+# Viram subdomínio (<slug>.<DOMINIO_BASE>) e nome de banco (mayafit_<slug>): não podem colidir com o endereço do admin,
+# com os bancos dos ambientes (mayafit_prod, mayafit_hml), com o controle nem com nomes de infraestrutura.
+RESERVADOS = frozenset({"admin", "www", "api", "app", "mail", "email", "smtp", "ftp", "hml", "prod", "dev", "teste",
+                        "controle", "mayacorp", "mayafit", "suporte", "status", "static", "cdn", "site", "totem"})
 ATIVOS = ("teste", "ativo", "suspenso")  # suspenso continua entrando (a cobrança só avisa); inativo não entra
 STATUS = ("teste", "ativo", "suspenso", "inativo")
 _LOGIN = re.compile(r"^[a-z0-9._-]{3,60}$")
@@ -193,6 +197,8 @@ def registrar(slug: str, nome: str, *, banco: str | None, status: str = "ativo",
               dominios: list[str] | None = None, tipo: str = "estudio", **ficha) -> Cliente:
     if not SLUG.match(slug or ""):
         raise RegraControle("Identificador: letras minúsculas, números e hífen (2 a 39), começando com letra.")
+    if slug in RESERVADOS and not (tipo == "mayacorp" and slug == "mayacorp"):
+        raise RegraControle(f"O identificador {slug} é reservado do sistema. Escolha outro.")
     if status not in STATUS:
         raise RegraControle(f"Status inválido: {status}.")
     with SessaoControle() as db:
@@ -320,7 +326,8 @@ def migrar_todos() -> list[str]:
 def _slugificar(texto: str) -> str:
     s = unicodedata.normalize("NFKD", texto or "").encode("ascii", "ignore").decode().lower()
     s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")[:39].strip("-")
-    return s if SLUG.match(s) else f"estudio-{s}"[:39].strip("-") if s else "estudio"
+    s = s if SLUG.match(s) else f"estudio-{s}"[:39].strip("-") if s else "estudio"
+    return f"estudio-{s}" if s in RESERVADOS else s
 
 
 def _login_de(email: str) -> str:
@@ -350,6 +357,8 @@ def provisionar(slug: str, nome: str, *, admin_email: str, admin_nome: str = "",
         raise RegraControle(erro)
     if not SLUG.match(slug or ""):
         raise RegraControle("Identificador: letras minúsculas, números e hífen (2 a 39), começando com letra.")
+    if slug in RESERVADOS and not (tipo == "mayacorp" and slug == "mayacorp"):
+        raise RegraControle(f"O identificador {slug} é reservado do sistema. Escolha outro.")
     with SessaoControle() as db:
         if db.scalar(select(Cliente.id).where(Cliente.slug == slug)):
             raise RegraControle(f"Já existe o estúdio {slug}.")

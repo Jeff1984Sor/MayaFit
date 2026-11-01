@@ -1,0 +1,7 @@
+[Unit]
+Description=MayaFit - endereços e HTTPS dos estúdios (%i)
+After=network-online.target nginx.service postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/deploy/mayafit/%i/deploy/certificados.sh %i

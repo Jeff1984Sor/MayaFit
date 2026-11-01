@@ -126,4 +126,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    # `python -m app.worker` roda este arquivo como `__main__`, um módulo DIFERENTE de `app.worker`; as tarefas dos
+    # módulos se registram em `app.worker.TAREFAS`. Sem isto o loop só via as tarefas deste arquivo (2 de 13).
+    import app.worker
+
+    app.worker.main()

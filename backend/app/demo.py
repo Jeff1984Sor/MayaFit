@@ -5,8 +5,12 @@ Monta, numa pasta própria (padrão `data/demo/`, não mexe no `data/dev.db`):
 - o Admin MayaFit (cliente tipo "mayacorp", domínio `admin.localhost`);
 - dois estúdios com banco próprio: "Studio Alfa Pilates" (`studio-alfa.localhost`) e "Beta Funcional"
   (`studio-beta.localhost`), cada um com administrador, professor, secretária e o usuário Suporte;
+- os dados de BASE de cada estúdio (`app.demo_base.popular_base`: cadastros, alunos, contratos, agenda, financeiro,
+  comissões, reposições, comunicados), ANTES dos módulos — vários dependem de alunos e recebimentos;
 - os dados sintéticos de cada módulo: chama `popular_demo(db)` de `app/modules/<modulo>/demo.py` (se existir) dentro de
-  cada estúdio, e `app.modules.admin_mayacorp.demo.popular_demo()` (se existir) para o controle.
+  cada estúdio, e `app.modules.admin_mayacorp.demo.popular_demo()` (se existir) para o controle;
+- os estúdios `demo-*` do admin viram estúdios reais (banco próprio + dados de base do tamanho do plano) por
+  `app.modules.admin_mayacorp.demo.criar_bancos()`, e o uso de todos é coletado no fim.
 
 Os endereços `*.localhost` resolvem para 127.0.0.1 nos navegadores. A senha de todos vem de DEMO_SENHA (ou é gerada e
 mostrada no fim). Para usar: rode a API e o worker com as variáveis que o comando imprime.
@@ -31,9 +35,11 @@ log = logging.getLogger("demo")
 
 ESTUDIOS = [
     {"slug": "studio-alfa", "nome": "Studio Alfa Pilates", "admin": ("Ana Souza", "ana@alfa.demo", "ana"),
+     "base": {"perfil": "pilates", "alunos": 90},
      "equipe": [("Carlos Lima", "carlos@alfa.demo", "carlos", "Professor"),
                 ("Dora Reis", "dora@alfa.demo", "dora", "Secretária")]},
     {"slug": "studio-beta", "nome": "Beta Funcional", "admin": ("Bruno Melo", "bruno@beta.demo", "bruno"),
+     "base": {"perfil": "funcional", "alunos": 60},
      "equipe": [("Ana Prado", "ana@beta.demo", "ana", "Professor"),  # "ana" repete: no endereço principal é ambíguo
                 ("Eva Nunes", "eva@beta.demo", "eva", "Secretária")]},
 ]
@@ -107,6 +113,7 @@ def main(argv: list[str] | None = None) -> None:
     from app.core import tenancy
     from app.core.db import SessionLocal
     from app.core.security import hash_senha, validar_politica_senha
+    from app.demo_base import popular_base
     from app.main import migrar
 
     senha = os.environ.get("DEMO_SENHA") or f"Demo-{secrets.token_urlsafe(6)}1"
@@ -130,6 +137,9 @@ def main(argv: list[str] | None = None) -> None:
                             admin_senha=senha, dias_teste=30 if e["slug"] == "studio-beta" else None)
         esc = service.por_slug(e["slug"])
         _equipe(esc, e["equipe"], senha)
+        with tenancy.usando(esc), SessionLocal() as db:
+            r = popular_base(db, **e["base"])
+        log.info("%s: dados de base %s", e["slug"], {k: v for k, v in r.items() if k != "geracao"})
         for mod in modulos:
             with tenancy.usando(esc), SessionLocal() as db:
                 mod.popular_demo(db)
@@ -144,7 +154,12 @@ def main(argv: list[str] | None = None) -> None:
     if demo_admin is not None and hasattr(demo_admin, "popular_demo"):
         demo_admin.popular_demo()
         log.info("controle: dados de app.modules.admin_mayacorp.demo")
-    service.gravar_uso_todos()
+        if hasattr(demo_admin, "criar_bancos"):
+            for slug, r in demo_admin.criar_bancos(senha, dominio_base=a.dominio_base).items():
+                log.info("%s: banco próprio e dados de base %s", slug, {k: v for k, v in r.items() if k != "geracao"})
+    service.limpar_cache()
+    gravados = service.gravar_uso_todos()
+    log.info("uso coletado de %s estúdio(s)", gravados)
 
     print(f"\nDemonstração pronta em {pasta}\nSenha de todos os usuários: {senha}\n")
     print("Endereços (rode a API na porta 8000 e o Next na 3000):")

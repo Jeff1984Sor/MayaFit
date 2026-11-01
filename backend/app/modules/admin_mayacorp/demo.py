@@ -1,12 +1,13 @@
 """Dados de DEMONSTRAÇÃO do admin MayaFit (só no banco de controle; nada de dado real).
 
-    uv run python -m app.modules.admin_mayacorp.demo            # popular (idempotente)
+    uv run python -m app.modules.admin_mayacorp.demo            # popular (idempotente) + bancos dos estúdios
     uv run python -m app.modules.admin_mayacorp.demo --remover  # apagar os estúdios de demonstração
 
 Cria estúdios fictícios (slug "demo-*", observação "[DEMO]") em todos os status, com plano, foto de uso, 12 meses de
 mensalidades (pagas, em aberto e vencidas), linha do tempo, indicação e solicitações do site — o bastante para o
-Início, a lista e a ficha mostrarem números. Os bancos desses estúdios NÃO são criados: telas que abrem o banco do
-estúdio (Usuários, último acesso) mostram vazio para eles.
+Início, a lista e a ficha mostrarem números. `criar_bancos()` dá a cada um o banco próprio (tabelas, identidade,
+perfis, Suporte, dono e equipe) com os dados de base da demonstração (`app.demo_base`), do tamanho do `uso` que o
+admin mostra: assim a coleta de uso e o worker funcionam neles como num estúdio de verdade.
 """
 
 import sys
@@ -39,6 +40,17 @@ ESTUDIOS = [
     ("demo-respira-pilates", "Respira Pilates", "Estúdio", "mensal", "teste", 1, 40, 3, None),
     ("demo-alongar", "Alongar Studio", "Essencial", "mensal", "inativo", 5, 12, 1, None),
 ]
+# banco próprio de cada um (`criar_bancos`): alunos cadastrados (~90% ficam ativos; 20 a 150, na proporção do uso acima)
+# e usuários com acesso (dono + equipe, até o tamanho da equipe do perfil)
+BANCOS = {
+    "demo-pilates-lumina": (140, 5),
+    "demo-studio-equilibrio": (150, 7),
+    "demo-corpo-em-movimento": (60, 2),
+    "demo-forca-funcional": (150, 6),
+    "demo-respira-pilates": (40, 3),
+    "demo-alongar": (20, 1),
+}
+SECRETARIA = "Rita Campos"
 
 SOLICITACOES = [
     ("Ateliê do Movimento", "Marina Duarte", "marina@ateliedomovimento.exemplo", "nova", 85),
@@ -147,6 +159,59 @@ def popular_demo(hoje: date | None = None) -> dict:
     return feitos
 
 
+def criar_bancos(senha: str | None = None, *, dominio_base: str | None = None, hoje: date | None = None) -> dict:
+    """Banco próprio para cada estúdio de demonstração (idempotente): cria e migra o banco, identidade, perfis, Suporte,
+    o dono (login "dono"), a equipe (professores com o nome dos profissionais + secretária) e os dados de base
+    (`app.demo_base.popular_base`, perfil funcional para os de funcional). Sem `senha`, os usuários nascem com convite.
+    Com `dominio_base`, o estúdio ganha também o endereço `<slug>.<dominio_base>`. Devolve as contagens por estúdio."""
+    import zlib
+
+    from app.controle import service
+    from app.core import perfis, tenancy
+    from app.core.db import SessionLocal
+    from app.core.models import Usuario
+    from app.core.security import hash_senha
+    from app.demo_base import PERFIS, popular_base
+    from app.seed import base as base_do_estudio
+
+    with SessaoControle() as db:
+        demos = [(c.slug, c.nome, c.banco, c.responsavel) for c in db.scalars(
+            select(Cliente).where(Cliente.slug.like(f"{PREFIXO}%"), Cliente.observacao.like(f"{MARCA_DEMO}%")).order_by(Cliente.id))]
+        if dominio_base:
+            for c in db.scalars(select(Cliente).where(Cliente.slug.in_([d[0] for d in demos]))):
+                host = f"{c.slug}.{dominio_base}"
+                if not db.scalar(select(Dominio.id).where(Dominio.host == host)):
+                    service.adicionar_dominio(db, c, host)
+            db.commit()
+    feitos: dict[str, dict] = {}
+    for slug, nome, banco, responsavel in demos:
+        if slug not in BANCOS or not banco:
+            continue
+        alunos, usuarios = BANCOS[slug]
+        perfil = "funcional" if "funcional" in slug else "pilates"
+        service.criar_banco(banco)
+        esc = tenancy.Estudio(slug=slug, banco=banco, mayacorp=False)
+        service.migrar(esc)
+        with tenancy.usando(esc), SessionLocal() as s:
+            base_do_estudio(s, nome=nome)
+            if not s.scalar(select(Usuario.id).where(Usuario.suporte.is_(True))):
+                service._usuario_suporte(s, slug)
+            if not s.scalar(select(Usuario.id).where(Usuario.login == "dono")):
+                service._primeiro_admin(s, responsavel or f"Responsável {nome}", f"dono@{slug}.exemplo", "dono", senha)
+                padrao = perfis.garantir_padrao(s)
+                profs = [p[0] for p in PERFIS[perfil]["profissionais"] if p[4]]
+                equipe = [(profs[0], "Professor"), (SECRETARIA, "Secretária"), *((p, "Professor") for p in profs[1:])]
+                for nome_u, perfil_u in equipe[: max(usuarios - 1, 0)]:
+                    login = nome_u.split()[0].lower().translate(str.maketrans("áéíóúâêôãõç", "aeiouaeoaoc"))
+                    s.add(Usuario(nome=nome_u, email=f"{login}@{slug}.exemplo", login=login, perfil_acesso_id=padrao[perfil_u].id,
+                                  senha_hash=hash_senha(senha) if senha else None, convite_pendente=not senha))
+            s.commit()
+            feitos[slug] = popular_base(s, perfil=perfil, alunos=alunos, hoje=hoje, semente=zlib.crc32(slug.encode()),
+                                        unidades=2 if alunos >= 100 else 1)
+        service.sincronizar_todos(slug)
+    return feitos
+
+
 def remover_demo() -> int:
     """Apaga os estúdios de demonstração (e, em cascata, cobranças, eventos, domínios) e as solicitações demo."""
     with SessaoControle() as db:
@@ -168,3 +233,4 @@ if __name__ == "__main__":
         print(f"{remover_demo()} estúdio(s) de demonstração removido(s).")
     else:
         print(popular_demo())
+        print(criar_bancos())
